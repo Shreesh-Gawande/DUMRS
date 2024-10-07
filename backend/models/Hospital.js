@@ -7,6 +7,15 @@ const hospitalSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    hospital_id:{
+       type:String,
+       required:true,
+       unique:true,
+    },
+    password:{
+        type:String,
+        required:true,
+       },
     address: {
         street: { type: String, required: true },
         city: { type: String, required: true },
