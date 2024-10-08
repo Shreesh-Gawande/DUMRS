@@ -1,22 +1,22 @@
 import mongoose from "mongoose"
 
-const PatientSchema =new mongoose.Schema({
+const PatientSchema = new mongoose.Schema({
     fullName: {
         type: String,
         required: true
     },
-    patient_id:{
-        type:String,
-        required:true,
-        unique:true,
+    patient_id: {
+        type: String,
+        required: true,
+        unique: true,
     },
     dateOfBirth: {
         type: Date,
         required: true
     },
-    age:{
-        type:Number,
-        required:true
+    age: {
+        type: Number,
+        required: true
     },
     gender: {
         type: String,
@@ -33,7 +33,7 @@ const PatientSchema =new mongoose.Schema({
         required: true,
         unique: true
     },
-    emergency_phone:{
+    emergency_phone: {
         type: String,
         required: true,
         unique: true
@@ -79,8 +79,14 @@ const PatientSchema =new mongoose.Schema({
         coverage: { type: String },
         policyNumber: { type: String, unique: true },
         coPayAmount: { type: Number }
-    }
+    },
+    medicalRecords: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: Records
+        }
+    ]
 })
 
-const Patient =mongoose.model("Patient",PatientSchema);
-module.exports=Patient;
+const Patient = mongoose.model("Patient", PatientSchema);
+module.exports = Patient;

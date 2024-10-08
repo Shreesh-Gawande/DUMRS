@@ -2,7 +2,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const recordSchema = new Schema({
-  
+  id: {
+    type: String,
+    required: true,
+  },
   patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true }, // Reference to Patient collection
   visitDate: { type: Date, required: true }, // Date of the visit
   visitType: { type: String, enum: ['Outpatient', 'Inpatient', 'Emergency'], required: true },
@@ -88,6 +91,6 @@ const recordSchema = new Schema({
 
 }, { timestamps: true });
 
-const Record = mongoose.model('Record', recordSchema);
+const Record = mongoose.model('Records', recordSchema);
 
 module.exports = Record;
