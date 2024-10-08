@@ -2,13 +2,14 @@
 
 const router = require("express").Router();
 
-router.get('/patients')
-router.post('/patients')
-router.put('/:id/personalData')
+router.post('/patient/new')         // create new patient 
 
-router.post('/hospitals')
-router.put('/hospitals/:hospitalId')
-router.get('/hospitals')
+router.put('/patient/update/:id')       // update patient
+
+router.post('/hospital/new')        // register new hospital
+
+router.put('/hospital/:hospitalId') // edit hospital
+
 
 
 
