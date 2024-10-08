@@ -5,6 +5,11 @@ const PatientSchema =new mongoose.Schema({
         type: String,
         required: true
     },
+    patient_id:{
+        type:String,
+        required:true,
+        unique:true,
+    },
     dateOfBirth: {
         type: Date,
         required: true
