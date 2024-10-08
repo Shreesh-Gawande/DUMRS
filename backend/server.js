@@ -31,8 +31,8 @@ app.use(morgan('dev'));   // HTTP request logging
 // routes
 
 app.use('/api/v1/patient',patientRoutes);
-app.use('/api/v1/patient',auth,authorizedRoutes); // protected routes, requires authorization.
-
+app.use('/api/v1',auth,authorizedRoutes); // protected routes, requires authorization.
+app.use('/api/v1/hospital',hospitalRoutes);
 
 app.listen(PORT, ()=>{
     console.log(`server listening on port: ${PORT} `);

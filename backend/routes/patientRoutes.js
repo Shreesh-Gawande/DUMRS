@@ -107,4 +107,6 @@ router.get('/:id/records/recent', async (req, res) => {
   }
 });
 
+//router.post('/:id/records')
+
 module.exports = router;
