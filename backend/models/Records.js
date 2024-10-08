@@ -2,52 +2,53 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const recordSchema = new Schema({
-  patientId: { type: Schema.Types.ObjectId, ref: 'Patient', required: true },
   
-  diagnosticInfo: {
-    testResults: [String], 
-    radiologyReports: [String], // E.g., X-rays, MRI
-    pathologyReports: [String], // E.g., biopsy results
-    geneticTestResults: [String], // E.g., genetic testing
+  patientId: { type: mongoose.Schema.Types.ObjectId, ref: 'Patient', required: true }, // Reference to Patient collection
+  visitDate: { type: Date, required: true }, // Date of the visit
+  visitType: { type: String, enum: ['Outpatient', 'Inpatient', 'Emergency'], required: true },
+
+
+  diagnosticInformation: {
+    testResults: [{
+      testName: String,
+      date: Date,
+      reportFileURL: String, // URL of diagnostic test result (if applicable)
+    }],
+    radiologyReports: [{
+      scanType: String, // e.g., X-ray, MRI
+      date: Date,
+      reportFileURL: String, // URL to the scan report or images
+    }],
+    pathologyReports: [{
+      sampleType: String, // e.g., biopsy, tissue
+      date: Date,
+      reportFileURL: String, // URL of pathology report
+    }],
+    geneticTestResults: [{
+      testName: String,
+      date: Date,
+      reportFileURL: String, // URL to genetic test results
+    }]
   },
-  
-  hospitalVisits: {
-    outpatientSummaries: [String], // E.g., doctor consultations
-    inpatientAdmissions: [
-      {
-        admissionDate: Date,
-        reason: String,
-        attendingPhysician: String,
-      },
-    ],
-    emergencyRoomVisits: [
-      {
-        visitDate: Date,
-        treatmentsAdministered: String,
-        followUpRequired: Boolean,
-      },
-    ],
-  },
-  
+
+
   dischargeSummaries: {
+    admissionDate: Date,
+    dischargeDate: Date,
     inpatientSummary: String, // Discharge instructions, medications
-    rehabilitationPlans: [String], // Physical therapy, recovery
-    referralSummaries: [String], // Referrals to other specialists
+    referrals: [{
+      referredTo: String,
+      reasonForReferral: String,
+    }],
   },
-  
-  proceduralHistory: {
-    surgeries: [
-      {
-        type: String,
-        surgeonNotes: String,
-        postSurgeryCare: String,
-      },
-    ],
+
+  proceduralDetails: {
+    surgeries: [String],  // All surgeries undergone during the visit
     anesthesiaRecords: [String], // Types and doses of anesthesia
-    operativeNotes: [String], // Detailed surgical notes
+    ProcedureSummary: String, // Brief surgical summary
   },
-  
-  medicationHistory: {
+
+  medicationDetails: {
     prescriptions: [
       {
         drugName: String,
@@ -64,46 +65,27 @@ const recordSchema = new Schema({
       },
     ],
   },
-  
-  consultations: {
-    physicianNotes: [String], // Doctor’s notes, diagnoses
-    specialistReports: [String], // Reports from specialists
-    referralInfo: [String], // Information on referrals
-  },
-  
-  lifestyleInfo: {
-    diet: String, // Dietary restrictions or recommendations
-    exercise: String, // Exercise regimen
-    substanceUse: {
-      alcohol: Boolean,
-      tobacco: Boolean,
-      drugUse: Boolean,
-    },
-    mentalHealth: [String], // Mental health records
-  },
-  
+
+
   legalInfo: {
     consentForms: [String], // Consent for procedures
     advanceDirectives: [String], // End-of-life care wishes
     powerOfAttorney: [String], // Power of attorney details
   },
-  
-  billingRecords: {
-    hospitalBills: [String], // Itemized bills
-    insuranceClaims: [
-      {
-        claimDate: Date,
-        status: String, // Approved, rejected
-        coPayment: Number,
+
+
+  paymentRecords: [
+    {
+      transactionId: {
+        type: String,
+        required: true
       },
-    ],
-    paymentRecords: [
-      {
-        paymentDate: Date,
-        amount: Number,
-      },
-    ],
-  },
+      paymentMode: String,
+      paymentDate: Date,
+      amount: Number,
+    },
+  ],
+
 }, { timestamps: true });
 
 const Record = mongoose.model('Record', recordSchema);
