@@ -4,7 +4,6 @@ const Hospital=require('../models/Hospital')
 const router = require("express").Router();
 
 
-
 router.get('/:id/details')
 
 
