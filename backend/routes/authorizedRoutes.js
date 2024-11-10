@@ -23,11 +23,45 @@ function generateRandomPassword() {
 // Create a new patient
 router.post('/patient/new', async (req, res) => {
     try {
-        const { fullName, patient_id, dateOfBirth, age, gender, phoneNumber, email, emergency_phone, address } = req.body;
-        const randomPassword = generateRandomPassword();
-        const patientId=generateRandomPatientId();
+        const {
+            fullName,
+            patient_id,
+            dateOfBirth,
+            age,
+            weight,
+            height,
+            gender,
+            phoneNumber,
+            email,
+            emergency_phone,
+            address,
+            bloodType,
+            allergies,
+            chronicConditions,
+            familyMedicalHistory,
+            immunizationRecords,
+            healthInsuranceDetails
+        } = req.body;
+        console.log("Request Body:", req.body);
+        if (!phoneNumber || phoneNumber === null) {
+            return res.status(400).json({ message: "Phone number is required and cannot be null" });
+        }
+        const existingPhoneNumber = await Patient_Personal.findOne({ phoneNumber });
+        if (existingPhoneNumber) {
+            return res.status(400).json({ message: "Phone number already exists" });
+        }
+
+        // Generate a random password and hash it
+        const password = generateRandomPassword();
+        console.log('Generated password:', password);
+        
+        const hashedPassword = await bcrypt.hash(password, 10); 
+
+        // Generate a random patient ID
+        const patientId = generateRandomPatientId();
+
         // Check if the patient already exists
-        const existingPatient = await Patient.findOne({ patient_id });
+        const existingPatient = await Patient.findOne({ patient_id: patientId });
         if (existingPatient) {
             return res.status(400).json({ message: 'Patient ID already exists' });
         }
@@ -35,32 +69,76 @@ router.post('/patient/new', async (req, res) => {
         // Parse dateOfBirth to a valid date format
         const parsedDateOfBirth = new Date(dateOfBirth);
 
-        // Create a new patient
+        // Create a new patient document in the Patient model
         const patient = new Patient({
-            patient_id:patientId,
+            patient_id: patientId,
+            bloodType,
+            allergies,
+            chronicConditions,
+            familyMedicalHistory,
+            immunizationRecords,
+            healthInsuranceDetails
         });
 
         // Save the patient to the database
         await patient.save();
-        const patientPersonal=new Patient_Personal({
+
+        // Create a new patient document in the Patient_Personal model
+        const patientPersonal = new Patient_Personal({
             fullName,
-            patient_id:patientId,
-            patient_password:randomPassword,
+            patient_id: patientId,
+            patient_password: hashedPassword,
             dateOfBirth: parsedDateOfBirth,
             age,
+            weight,
+            height,
             gender,
             phoneNumber,
             email,
             emergency_phone,
             address
         });
+
+        // Save the patient personal information to the database
         await patientPersonal.save();
+
         res.status(201).json({ message: 'Patient created successfully', patient });
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error during patient creation:', error);
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
+
+router.get('/patient/staticData/:patient_id', async (req, res) => {
+    const { patient_id } = req.params;
+  
+    try {
+      // Fetch data from Patient_Personal model
+      const patientStatic = await Patient_Personal.findOne({ patient_id }).select('age height weight');
+      if (!patientStatic) {
+        return res.status(404).json({ error: "Patient not found" });
+      }
+  
+      // Fetch bloodType and allergies from Patient model
+      const patientAdditional = await Patient.findOne({ patient_id }).select('bloodType allergies');
+      if (!patientAdditional) {
+        return res.status(404).json({ error: "Additional patient data not found" });
+      }
+  
+      // Combine data from both models
+      const combinedData = {
+        ...patientStatic.toObject(),
+        bloodType: patientAdditional.bloodType,
+        allergies: patientAdditional.allergies,
+      };
+  
+      return res.status(200).json(combinedData);
+    } catch (error) {
+      console.error("Error fetching patient data:", error);
+      return res.status(500).json({ error: "Internal Server Error" });
+    }
+  });
+  
 
 router.get('/patient/:patient_id', async (req, res) => {
     try {
