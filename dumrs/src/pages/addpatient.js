@@ -20,6 +20,8 @@ const PatientRegistrationForm = () => {
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [progress, setProgress] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
 
   // Validation rules
   const validateField = (name, value) => {
@@ -104,7 +106,7 @@ const PatientRegistrationForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     
     // Validate all fields
@@ -128,7 +130,54 @@ const PatientRegistrationForm = () => {
     
     // If no errors, submit form
     if (Object.keys(newErrors).length === 0) {
-      console.log('Form submitted:', formData);
+        setIsSubmitting(true);
+        setSubmitStatus({ type: '', message: '' });
+        
+        try {
+          const response = await fetch('http://localhost:4000/patient/new', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+          });
+  
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+  
+          const data = await response.json();
+          setSubmitStatus({
+            type: 'success',
+            message: 'Patient registration successful!'
+          });
+          
+          // Reset form
+          setFormData({
+            fullName: '',
+            dateOfBirth: '',
+            gender: '',
+            email: '',
+            phoneNumber: '',
+            emergencyPhone: '',
+            address: {
+              street: '',
+              city: '',
+              state: '',
+              zipCode: ''
+            }
+          });
+          setTouched({});
+          
+        } catch (error) {
+          setSubmitStatus({
+            type: 'error',
+            message: 'Failed to register patient. Please try again.'
+          });
+          console.error('Submission error:', error);
+        } finally {
+          setIsSubmitting(false);
+        }
     }
   };
 
@@ -150,6 +199,18 @@ const PatientRegistrationForm = () => {
               </span>
             </div>
           </div>
+          {submitStatus.message && (
+            <div
+              role="alert"
+              className={`mb-4 p-4 rounded-lg ${
+                submitStatus.type === 'success' 
+                  ? 'bg-green-100 text-green-700' 
+                  : 'bg-red-100 text-red-700'
+              }`}
+            >
+              {submitStatus.message}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Personal Information Section */}
@@ -487,18 +548,23 @@ const PatientRegistrationForm = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={Object.keys(errors).length > 0}
+              disabled={!progress===100}
               className={`w-full py-3 px-6 rounded-lg transition duration-200 font-medium ${
-                Object.keys(errors).length > 0
+                Object.keys(errors).length > 0 && progress!==100
                   ? 'bg-purple-300 cursor-not-allowed'
                   : 'bg-purple-600 hover:bg-purple-700'
               } text-white`}
             >
-              {progress === 100 ? 'Register Patient' : 'Complete All Fields'}
+              {isSubmitting 
+                ? 'Submitting...' 
+                : progress === 100 
+                  ? 'Register Patient' 
+                  : 'Complete All Fields'
+              }
             </button>
 
             {/* Form Status Message */}
-            {Object.keys(errors).length > 0 && touched.fullName && (
+            {Object.keys(errors).length > 0 && touched.fullName && progress!==100 && (
               <div className="text-red-500 text-sm flex items-center gap-2 justify-center">
                 <AlertCircle className="w-4 h-4" />
                 Please fix the errors above to continue

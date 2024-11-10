@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { UserCircle, Heart, FileText, ChevronLeft, ChevronRight ,User,Pen} from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { UserCircle, Heart, FileText, ChevronLeft, ChevronRight, Pen } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [activeItem, setActiveItem] = useState('profile');
-  const [userRole]=useState(localStorage.getItem('userRole'))
+  const [userRole] = useState(() => localStorage.getItem('userRole'));
+  const location = useLocation();
   
-
   const menuItems = [
     {
       id: 'profile',
@@ -15,7 +14,7 @@ const Sidebar = () => {
       label: 'Profile'
     },
     {
-      id: 'medical',
+      id: 'medical-info',
       icon: <Heart size={22} />,
       label: 'Medical Info'
     },
@@ -25,6 +24,14 @@ const Sidebar = () => {
       label: 'Records'
     }
   ];
+
+  if(userRole === 'doctor') {
+    menuItems.push({
+      id: 'add-record',
+      icon: <Pen size={22} />,
+      label: 'Add Records'
+    });
+  }
 
   return (
     <aside className={`
@@ -39,6 +46,7 @@ const Sidebar = () => {
     `}>
       {/* Logo Section */}
       <div className="h-20 flex items-center justify-center px-4 border-b border-gray-50">
+        <Link to='/dashboard'>
         <img
           src="/api/placeholder/120/40"
           alt="DUMRS-ICON"
@@ -48,47 +56,50 @@ const Sidebar = () => {
             object-contain
           `}
         />
+        </Link>
       </div>
 
       {/* Navigation Items */}
       <nav className="flex-1 pt-6">
-        {menuItems.map(item => (
-          <Link to={'/'+item.id}>
-             <button
-            key={item.id}
-            onClick={() => {setActiveItem(item.id)}}
-            className={`
-              w-full
-              flex items-center
-              ${isCollapsed ? 'justify-center px-2' : 'justify-start px-6'}
-              py-3.5
-              transition-all duration-200
-              ${activeItem === item.id 
-                ? 'text-blue-600 bg-blue-50/60'
-                : 'text-gray-600 hover:bg-gray-50'
-              }
-              ${activeItem === item.id && !isCollapsed && 'border-r-4 border-blue-600'}
-            `}
-            title={isCollapsed ? item.label : ''}
-          >
-            <span className={`
-              ${activeItem === item.id ? 'text-blue-600' : 'text-gray-400'}
-            `}>
-              {item.icon}
-            </span>
-            
-            <span className={`
-              ml-3
-              text-sm
-              font-medium
-              ${isCollapsed ? 'hidden' : 'block'}
-              transition-all duration-200
-            `}>
-              {item.label}
-            </span>
-          </button>
-          </Link>
-        ))}
+        {menuItems.map(item => {
+          const isActive = location.pathname === `/${item.id}`;
+          
+          return (
+            <Link
+              key={item.id}
+              to={`/${item.id}`}
+              className={`
+                w-full
+                flex items-center
+                ${isCollapsed ? 'justify-center px-2' : 'justify-start px-6'}
+                py-3.5
+                transition-all duration-200
+                ${isActive 
+                  ? 'text-blue-600 bg-blue-50/60'
+                  : 'text-gray-600 hover:bg-gray-50'
+                }
+                ${isActive && !isCollapsed && 'border-r-4 border-blue-600'}
+              `}
+              title={isCollapsed ? item.label : ''}
+            >
+              <span className={`
+                ${isActive ? 'text-blue-600' : 'text-gray-400'}
+              `}>
+                {item.icon}
+              </span>
+              
+              <span className={`
+                ml-3
+                text-sm
+                font-medium
+                ${isCollapsed ? 'hidden' : 'block'}
+                transition-all duration-200
+              `}>
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
       </nav>
 
       {/* Collapse Toggle */}

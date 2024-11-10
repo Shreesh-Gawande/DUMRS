@@ -39,4 +39,4 @@ app.use("/auth/", authenticationRoutes); // Prefixing all routes with /auth
 // Server
 app.listen(PORT, () => {
   console.log(`Server listening on port: ${PORT}`);
-})
+});
