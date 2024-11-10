@@ -8,6 +8,7 @@ import PatientRegistrationForm from "./pages/addpatient";
 import Profile from "./pages/profile";
 import AdminDashboard from "./pages/admindashboard";
 import HospitalRegistrationForm from "./pages/addhospital";
+import HospitalDashboard from "./pages/hosptialdashboard";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/add-hospital" element={<HospitalRegistrationForm/>}/>
           <Route path="/profile" element={<Profile/>}/>
           <Route path="/admin/dashboard" element={<AdminDashboard/>}/>
+          <Route path="/doctor/dashboard" element={<HospitalDashboard/>}/>
        </Routes>
     </BrowserRouter>
   );

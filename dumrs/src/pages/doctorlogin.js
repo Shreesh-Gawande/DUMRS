@@ -77,7 +77,7 @@ export function DoctorLogin() {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userRole', 'patient');
-        navigate('/patient/dashboard');
+        navigate('/dashboard');
       } else {
         setError(data.message || 'Login failed. Please check your credentials.');
       }
