@@ -8,6 +8,41 @@ const Patient = require("../models/Patient_Personal");
 const router = express.Router();
 const SECRET_KEY = process.env.SECRET_KEY || "mysecretkey";
 
+router.get("/test", (req, res) => {
+    res.send("Test route is working");
+  });
+  
+  router.post("/signup", async (req, res) => {
+    const { authority_id, authority_password } = req.body;
+
+    try {
+        // Check if the authority already exists
+        const existingAuthority = await Authority.findOne({ authority_id });
+        if (existingAuthority) {
+            return res.status(400).json({ message: "Authority already exists" });
+        }
+
+        // Hash the password before saving
+        const hashedPassword = await bcrypt.hash(authority_password, 10);
+
+        // Create a new authority
+        const newAuthority = new Authority({
+            authority_id,
+            authority_password: hashedPassword,
+        });
+
+        // Save the new authority to the database
+        await newAuthority.save();
+
+        // Create a JWT token for the newly created authority
+        const token = jwt.sign({ userId: newAuthority._id, userType: "authority" }, SECRET_KEY, { expiresIn: "1h" });
+
+        // Send the token and user information back in the response
+        return res.status(201).json({ token, userType: "authority", userId: newAuthority._id });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+});
 // Authority Login
 router.post("/authority", async (req, res) => {
     const { authority_id, authority_password } = req.body;
@@ -19,11 +54,12 @@ router.post("/authority", async (req, res) => {
         if (!isPasswordValid) return res.status(400).json({ message: "Invalid password" });
 
         const token = jwt.sign({ userId: authority._id, userType: "authority" }, SECRET_KEY, { expiresIn: "1h" });
-        res.json({ token, userType: "authority", userId: authority._id });
+        return res.json({ token, userType: "authority", userId: authority._id });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 });
+
 
 // Hospital Login
 router.post("/hospital", async (req, res) => {
