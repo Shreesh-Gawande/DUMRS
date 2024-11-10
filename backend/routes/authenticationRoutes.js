@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Authority = require("../models/Authority_Personal");
 const Hospital = require("../models/Hospital");
-const Patient = require("../models/Patient_Personal");
+const Patient_Personal = require("../models/Patient_Personal");
 
 const router = express.Router();
 const SECRET_KEY = process.env.SECRET_KEY || "mysecretkey";
@@ -75,10 +75,7 @@ router.post("/hospital", async (req, res) => {
     try {
         const hospital = await Hospital.findOne({ hospital_id });
         if (!hospital) return res.status(404).json({ message: "Hospital not found" });
-           console.log(hospital_password)
-           console.log( hospital.hospital_password)
         const isPasswordValid = await bcrypt.compare(hospital_password,hospital.hospital_password);
-        console.log(isPasswordValid)
         if (!isPasswordValid) return res.status(400).json({ message: "Invalid password" });
 
         const token = jwt.sign({ userId: hospital._id, userType: "hospital" }, SECRET_KEY, { expiresIn: "1h" });
@@ -98,15 +95,28 @@ router.post("/hospital", async (req, res) => {
 // Patient Login
 router.post("/patient", async (req, res) => {
     const { patient_id, patientPassword } = req.body;
+
     try {
-        const patient = await Patient.findOne({ patient_id });
-        if (!patient) return res.status(404).json({ message: "Patient not found" });
+        // Find the patient in the Patient_Personal model
+        const patient = await Patient_Personal.findOne({ patient_id });
+        if (!patient) {
+            return res.status(404).json({ message: "Patient not found" });
+        }
 
-        const isPasswordValid = await bcrypt.compare(patientPassword, patient.patientPassword);
-        if (!isPasswordValid) return res.status(400).json({ message: "Invalid password" });
+        // Compare the plain-text password with the hashed password
+        const isPasswordValid = await bcrypt.compare(patientPassword, patient.patient_password);
+        if (!isPasswordValid) {
+            return res.status(400).json({ message: "Invalid password" });
+        }
 
-        const token = jwt.sign({ userId: patient._id, userType: "patient" }, SECRET_KEY, { expiresIn: "1h" });
+        // Generate JWT token
+        const token = jwt.sign(
+            { userId: patient._id, userType: "patient" },
+            SECRET_KEY,
+            { expiresIn: "1h" }
+        );
 
+        // Set the token in a cookie
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -115,8 +125,10 @@ router.post("/patient", async (req, res) => {
 
         return res.json({ message: "Login successful", userType: "patient", userId: patient._id });
     } catch (error) {
+        console.error("Error during patient login:", error);
         return res.status(500).json({ error: error.message });
     }
 });
+
 
 module.exports = router;

@@ -26,6 +26,14 @@ const PatientPersonalSchema = new Schema(
       type: Number,
       required: true,
     },
+    weight:{
+      type:String,
+      
+    },
+    height:{
+      type:String,
+     
+    },
     gender: {
       type: String,
       enum: ["Male", "Female", "Other"],
@@ -39,7 +47,8 @@ const PatientPersonalSchema = new Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
+      default: "",
+      unique: false,
     },
     emergency_phone: {
       type: String,
