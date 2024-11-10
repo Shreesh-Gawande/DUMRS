@@ -41,11 +41,10 @@ const retrieveFileUrl = async (patientId, key) => {
             { expires : 60 }
         );
     
-        res.send(url);
+        return url;
 
     } catch (error) {
-        console.log("Error in retrieving file ", error);        
-        res.send(error);
+        console.log("Error in retrieving file ", error);                
     }
 }
 

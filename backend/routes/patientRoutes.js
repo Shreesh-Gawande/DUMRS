@@ -4,6 +4,7 @@ const express = require("express");
 const router = express.Router();
 const Patient = require("../models/Patient");
 const Record = require("../models/Records");
+const { retrieveFileUrl } = require("../controllers/S3Storage");
 
 // Get Patient Personal Data
 router.get('/:id/personalData', async (req, res) => {
@@ -58,6 +59,15 @@ router.get('/:id/records', async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+// Get specific record of a patient
+router.get('/:id/:key', async (req,res) => {
+  const patientId = req.params.id;
+  const key = req.params.key;
+  const url = await retrieveFileUrl(patientId, key);
+
+  res.status(200).json({url});
+})
 
 // Get Specific Visit Record Details by Visit ID
 router.get('/:id/records/:visitId', async (req, res) => {
