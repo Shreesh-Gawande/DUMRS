@@ -69,7 +69,7 @@ router.get('/:id/:key', async (req,res) => {
   res.status(200).json({url});
 })
 
-// Get Specific Visit Record Details by Visit ID
+// Get Specific Visit Record Details by Visit ID (not used)
 router.get('/:id/records/:visitId', async (req, res) => {
   try {
     const record = await Record.findOne({ patientId: req.params.id, _id: req.params.visitId });
