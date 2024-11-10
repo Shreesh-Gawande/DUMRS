@@ -11,7 +11,7 @@ const authoritySchema=new mongoose.Schema({
     required:true,
     unique:true,
    },
-   password:{
+   authority_password:{
     type:String,
     required:true,
    }

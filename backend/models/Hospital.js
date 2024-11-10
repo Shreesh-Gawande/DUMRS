@@ -12,7 +12,7 @@ const hospitalSchema = new mongoose.Schema({
        required:true,
        unique:true,
     },
-    password:{
+    hospital_password:{
         type:String,
         required:true,
        },

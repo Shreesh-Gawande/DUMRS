@@ -90,6 +90,8 @@ router.get('/:id/records/reports', async (req, res) => {
   }
 });
 
+
+
 // Get Most Recent Record (e.g., for showing the latest visit summary)
 router.get('/:id/records/recent', async (req, res) => {
   try {
