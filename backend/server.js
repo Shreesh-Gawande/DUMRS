@@ -6,6 +6,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
 const authenticationRoutes = require("./routes/authenticationRoutes");
+const authorizedRoutes=require("./routes/authorizedRoutes")
 
 const PORT = process.env.PORT || 4000;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3001";
@@ -25,7 +26,7 @@ app.use(cookieParser());
 app.use(morgan("dev"));  // Logging requests
 
 // MongoDB Connection
-mongoose.connect("mongodb+srv://ShreeshGawande:Shreesh10@cluster0.o3pndei.mongodb.net/")
+mongoose.connect("mongodb+srv://ShreeshGawande:Shreesh10@cluster0.o3pndei.mongodb.net/MediSync")
   .then(() => {
     console.log("MongoDB Connected");
   })
@@ -35,6 +36,7 @@ mongoose.connect("mongodb+srv://ShreeshGawande:Shreesh10@cluster0.o3pndei.mongod
 
 // Routes
 app.use("/auth/", authenticationRoutes); // Prefixing all routes with /auth
+app.use("/users/",authorizedRoutes);
 
 // Server
 app.listen(PORT, () => {
