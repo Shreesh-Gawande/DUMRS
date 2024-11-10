@@ -75,8 +75,10 @@ router.post("/hospital", async (req, res) => {
     try {
         const hospital = await Hospital.findOne({ hospital_id });
         if (!hospital) return res.status(404).json({ message: "Hospital not found" });
-
-        const isPasswordValid = await bcrypt.compare(hospital_password, hospital.hospital_password);
+           console.log(hospital_password)
+           console.log( hospital.hospital_password)
+        const isPasswordValid = await bcrypt.compare(hospital_password,hospital.hospital_password);
+        console.log(isPasswordValid)
         if (!isPasswordValid) return res.status(400).json({ message: "Invalid password" });
 
         const token = jwt.sign({ userId: hospital._id, userType: "hospital" }, SECRET_KEY, { expiresIn: "1h" });

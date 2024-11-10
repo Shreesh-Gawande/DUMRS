@@ -1,17 +1,25 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function DoctorLogin() {
+  const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [hide, setHide] = useState(true);
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [isValid, setValid] = useState(false);
-  const [role, setRole] = useState(null); // Stores the selected role
+  const [role, setRole] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Validation logic
   const validateInputs = () => {
-    if (id.length !== 10 || password.length === 0) {
-      setError("Please enter a valid ID and password");
+    if (id.length !== 10) {
+      setError("ID must be exactly 10 characters long");
+      setValid(false);
+      return false;
+    }
+    if (password.length === 0) {
+      setError("Password is required");
       setValid(false);
       return false;
     }
@@ -20,16 +28,109 @@ export function DoctorLogin() {
     return true;
   };
 
-  // Submit handler based on selected role
-  const handleSubmit = (e) => {
+  const handleDoctorLogin = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('http://localhost:4000/auth/doctor', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          doctor_id: id,
+          doctor_password: password
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userRole', 'doctor');
+        navigate('/doctor/dashboard');
+      } else {
+        setError(data.message || 'Login failed. Please check your credentials.');
+      }
+    } catch (error) {
+      setError('Network error. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePatientLogin = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('http://localhost:4000/auth/patient', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          patient_id: id,
+          patient_password: password
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userRole', 'patient');
+        navigate('/patient/dashboard');
+      } else {
+        setError(data.message || 'Login failed. Please check your credentials.');
+      }
+    } catch (error) {
+      setError('Network error. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleAdminLogin = async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('http://localhost:4000/auth/authority', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          authority_id: id,
+          authority_password: password
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userRole', 'admin');
+        navigate('/admin/dashboard');
+      } else {
+        setError(data.message || 'Login failed. Please check your credentials.');
+      }
+    } catch (error) {
+      setError('Network error. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateInputs()) {
-      if (role === "Doctor") {
-        console.log("Doctor Login");
-      } else if (role === "Patient") {
-        console.log("Patient Login");
-      } else if (role === "Admin") {
-        console.log("Admin Login");
+      switch (role) {
+        case "Doctor":
+          await handleDoctorLogin();
+          break;
+        case "Patient":
+          await handlePatientLogin();
+          break;
+        case "Admin":
+          await handleAdminLogin();
+          break;
       }
     }
   };
@@ -37,6 +138,30 @@ export function DoctorLogin() {
   useEffect(() => {
     validateInputs();
   }, [id, password]);
+
+  // Custom loading spinner component
+  const LoadingSpinner = () => (
+    <svg 
+      className="animate-spin h-5 w-5 mr-2" 
+      xmlns="http://www.w3.org/2000/svg" 
+      fill="none" 
+      viewBox="0 0 24 24"
+    >
+      <circle 
+        className="opacity-25" 
+        cx="12" 
+        cy="12" 
+        r="10" 
+        stroke="currentColor" 
+        strokeWidth="4"
+      />
+      <path 
+        className="opacity-75" 
+        fill="currentColor" 
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
+  );
 
   return (
     <div className="min-h-screen bg-[#F8F9FF] flex items-center justify-center p-4 font-nunito">
@@ -72,7 +197,19 @@ export function DoctorLogin() {
               <h2 className="text-2xl lg:text-3xl font-medium">Welcome {role}</h2>
 
               {error && (
-                <div className="text-red-500 text-sm bg-red-50 p-2 rounded-lg">{error}</div>
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      {/* Error Icon */}
+                      <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-red-700">{error}</p>
+                    </div>
+                  </div>
+                </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -84,7 +221,8 @@ export function DoctorLogin() {
                       onChange={(e) => setId(e.target.value)}
                       type="text"
                       placeholder="0123456789"
-                      className="flex-1 px-4 py-2.5 rounded-lg focus:outline-none text-sm"
+                      className="flex-1 px-4 py-2.5 rounded-lg focus:outline-none text-sm disabled:bg-gray-50"
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -97,7 +235,8 @@ export function DoctorLogin() {
                       onChange={(e) => setPassword(e.target.value)}
                       type={hide ? "password" : "text"}
                       placeholder="Your password"
-                      className="flex-1 px-4 py-2.5 rounded-lg focus:outline-none text-sm"
+                      className="flex-1 px-4 py-2.5 rounded-lg focus:outline-none text-sm disabled:bg-gray-50"
+                      disabled={isLoading}
                     />
                     <img
                       src={hide ? "/images/icons/show.png" : "/images/icons/hide.png"}
@@ -110,18 +249,32 @@ export function DoctorLogin() {
 
                 <button
                   type="submit"
-                  disabled={!isValid}
+                  disabled={!isValid || isLoading}
                   className="w-full bg-[#8699DA] text-white py-2.5 rounded-lg disabled:opacity-50 
-                           disabled:cursor-not-allowed transition-all hover:bg-[#7385c6] mt-4 text-sm"
+                           disabled:cursor-not-allowed transition-all hover:bg-[#7385c6] mt-4 text-sm
+                           flex items-center justify-center"
                 >
-                  Sign In
+                  {isLoading ? (
+                    <>
+                      <LoadingSpinner />
+                      Signing In...
+                    </>
+                  ) : (
+                    "Sign In"
+                  )}
                 </button>
               </form>
 
               {/* Back link to re-select role */}
               <button
-                onClick={() => setRole(null)}
-                className="text-[#8699DA] text-sm hover:underline mt-4"
+                onClick={() => {
+                  setRole(null);
+                  setError(null);
+                  setId("");
+                  setPassword("");
+                }}
+                className="text-[#8699DA] text-sm hover:underline mt-4 disabled:opacity-50"
+                disabled={isLoading}
               >
                 Back to role selection
               </button>
@@ -140,3 +293,5 @@ export function DoctorLogin() {
     </div>
   );
 }
+
+export default DoctorLogin;

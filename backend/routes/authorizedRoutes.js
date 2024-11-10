@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const authMiddleware= require("../middlewares/auth");
+const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 const Patient = require("../models/Patient");
 const Hospital = require("../models/Hospital");
@@ -9,9 +10,15 @@ const Patient_Personal = require("../models/Patient_Personal");
 function generateRandomPassword() {
     return crypto.randomBytes(8).toString('hex'); // Generates a 16-character password
   }
+  
   function generateRandomPatientId() {
-    return crypto.randomBytes(10).toString('hex'); // Generates a 16-character password
-  }
+    // Generate random bytes and convert them to a decimal number
+    const randomBytes = crypto.randomBytes(5); // 5 bytes = 40 bits, enough for a 10-digit number
+    const decimalValue = parseInt(randomBytes.toString('hex'), 16);
+
+    // Ensure the value is a 10-digit number
+    return decimalValue % 9000000000 + 1000000000; // Ensures the number is between 1000000000 and 9999999999
+}
 
 // Create a new patient
 router.post('/patient/new', async (req, res) => {
@@ -30,7 +37,7 @@ router.post('/patient/new', async (req, res) => {
 
         // Create a new patient
         const patient = new Patient({
-           
+            patient_id:patientId,
         });
 
         // Save the patient to the database
@@ -54,6 +61,39 @@ router.post('/patient/new', async (req, res) => {
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
 });
+
+router.get('/patient/:patient_id', async (req, res) => {
+    try {
+        const { patient_id } = req.params;
+
+        // Find the patient in the Patient model using patient_id
+        const patient = await Patient.findOne({ patient_id });
+
+        if (!patient) {
+            return res.status(404).json({ message: 'Patient not found' });
+        }
+
+        // Return the patient data
+        res.status(200).json({
+            message: 'Patient found successfully',
+            patient: {
+                patient_id: patient.patient_id,
+                bloodType: patient.bloodType,
+                allergies: patient.allergies,
+                chronicConditions: patient.chronicConditions,
+                familyMedicalHistory: patient.familyMedicalHistory,
+                immunizationRecords: patient.immunizationRecords,
+                healthInsuranceDetails: patient.healthInsuranceDetails,
+                medicalRecords: patient.medicalRecords,
+            }
+        });
+
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
+
 
 // Update patient
 router.put('/patient/update/:id',authMiddleware, async (req, res) => {
@@ -80,13 +120,18 @@ router.put('/patient/update/:id',authMiddleware, async (req, res) => {
 });
 
 // Create a new hospital
-router.post('/hospital/new',authMiddleware, async (req, res) => {
-    const { name, hospital_id, password, address, phoneNumber, email } = req.body;
+router.post('/hospital/new', async (req, res) => {
+    const { name, address, phoneNumber, email } = req.body;
+    const password = generateRandomPassword();
+    console.log(password);
+    
+    const hashedPassword = await bcrypt.hash(password, 10);  
+        const hospitalId=generateRandomPatientId();
     try {
         const hospital = new Hospital({
             name,
-            hospital_id,
-            password,
+            hospital_id:hospitalId,
+            hospital_password:hashedPassword,
             address,
             phoneNumber,
             email
