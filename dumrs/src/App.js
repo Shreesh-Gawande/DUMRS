@@ -6,6 +6,8 @@ import MedicalProfile from "./pages/medicalInfo";
 import AddMedicalRecord from "./pages/addrecord";
 import PatientRegistrationForm from "./pages/addpatient";
 import Profile from "./pages/profile";
+import AdminDashboard from "./pages/admindashboard";
+import HospitalRegistrationForm from "./pages/addhospital";
 
 function App() {
   return (
@@ -16,7 +18,9 @@ function App() {
           <Route path="/medical-info" element={<MedicalProfile/>}/>
           <Route path="/add-record" element={<AddMedicalRecord/>}/>
           <Route path="/add-patient" element={<PatientRegistrationForm/>}/>
+          <Route path="/add-hospital" element={<HospitalRegistrationForm/>}/>
           <Route path="/profile" element={<Profile/>}/>
+          <Route path="/admin/dashboard" element={<AdminDashboard/>}/>
        </Routes>
     </BrowserRouter>
   );

@@ -8,11 +8,16 @@ const mongoose = require("mongoose");
 const authenticationRoutes = require("./routes/authenticationRoutes");
 
 const PORT = process.env.PORT || 4000;
-const CLIENT_URL = process.env.CLIENT_URL;
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3001";
 const app = express();
 
 // Middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: CLIENT_URL,
+    credentials: true,  // Allows cookies to be sent cross-origin if needed
+  })
+);
 
 app.use(express.json());  // Middleware for parsing JSON request bodies
 app.use(express.urlencoded({ extended: true }));
@@ -31,8 +36,7 @@ mongoose.connect("mongodb+srv://ShreeshGawande:Shreesh10@cluster0.o3pndei.mongod
 // Routes
 app.use("/auth/", authenticationRoutes); // Prefixing all routes with /auth
 
-
 // Server
 app.listen(PORT, () => {
   console.log(`Server listening on port: ${PORT}`);
-});
+})
