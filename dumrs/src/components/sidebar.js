@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { UserCircle, Heart, FileText, ChevronLeft, ChevronRight ,User} from 'lucide-react';
+import { UserCircle, Heart, FileText, ChevronLeft, ChevronRight ,User,Pen} from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [activeItem, setActiveItem] = useState('profile');
+  const [userRole]=useState(localStorage.getItem('userRole'))
+  
 
   const menuItems = [
     {
@@ -50,9 +53,10 @@ const Sidebar = () => {
       {/* Navigation Items */}
       <nav className="flex-1 pt-6">
         {menuItems.map(item => (
-          <button
+          <Link to={'/'+item.id}>
+             <button
             key={item.id}
-            onClick={() => setActiveItem(item.id)}
+            onClick={() => {setActiveItem(item.id)}}
             className={`
               w-full
               flex items-center
@@ -83,6 +87,7 @@ const Sidebar = () => {
               {item.label}
             </span>
           </button>
+          </Link>
         ))}
       </nav>
 
