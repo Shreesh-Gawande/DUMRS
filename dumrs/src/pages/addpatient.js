@@ -6,8 +6,8 @@ const PatientRegistrationForm = () => {
     fullName: '',
     dateOfBirth: '',
     gender: '',
-    email: '',
     phoneNumber: '',
+    email: '',
     emergencyPhone: '',
     address: {
       street: '',
@@ -134,7 +134,7 @@ const PatientRegistrationForm = () => {
         setSubmitStatus({ type: '', message: '' });
         
         try {
-          const response = await fetch('http://localhost:4000/patient/new', {
+          const response = await fetch('http://localhost:4000/users/patient/new', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
