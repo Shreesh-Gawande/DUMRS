@@ -109,6 +109,55 @@ router.get('/:id/records/recent', async (req, res) => {
   }
 });
 
+// Add or update allergies
+router.patch("/:id/allergies", async (req, res) => {
+  try {
+      const patient = await Patient.findById(req.params.id);
+      patient.allergies.push(req.body);
+      await patient.save();
+      res.json(patient.allergies);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+// Add or update chronic conditions
+router.patch("/:id/chronic-conditions", async (req, res) => {
+  try {
+      const patient = await Patient.findById(req.params.id);
+      patient.chronicConditions.push(req.body);
+      await patient.save();
+      res.json(patient.chronicConditions);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+// Add or update family medical history
+router.patch("/:id/family-history", async (req, res) => {
+  try {
+      const patient = await Patient.findById(req.params.id);
+      patient.familyMedicalHistory.push(req.body);
+      await patient.save();
+      res.json(patient.familyMedicalHistory);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+// Add or update immunization records
+router.patch("/:id/immunizations", async (req, res) => {
+  try {
+      const patient = await Patient.findById(req.params.id);
+      patient.immunizationRecords.push(req.body);
+      await patient.save();
+      res.json(patient.immunizationRecords);
+  } catch (error) {
+      res.status(500).json({ error: error.message });
+  }
+});
+
+
 //router.post('/:id/records')
 
 module.exports = router;
