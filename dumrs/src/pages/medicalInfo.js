@@ -12,7 +12,7 @@ import {
   X
 } from 'lucide-react';
 import Sidebar from '../components/sidebar';
-
+const userRole=localStorage.getItem('userRole')
 const MedicalProfile = () => {
   const [data, setData] = useState({
     bloodType: "A+",
@@ -47,6 +47,8 @@ const MedicalProfile = () => {
       coPayAmount: 25
     }
   });
+  
+  
 
   const handleAddEntry = (section, newEntry) => {
     setData(prev => ({
@@ -475,7 +477,7 @@ const Modal = ({ title, fields, onSubmit }) => {
             {title}
           </h2>
         </div>
-        {addButton}
+        {userRole==='doctor'&&addButton}
       </div>
       {children}
     </div>

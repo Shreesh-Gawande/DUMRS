@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { UserCircle, Heart, FileText, ChevronLeft, ChevronRight, Pen } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
-const Sidebar = () => {
+const Sidebar = (props) => {
+  const {id}=props
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [userRole] = useState(() => localStorage.getItem('userRole'));
   const location = useLocation();
@@ -46,7 +47,7 @@ const Sidebar = () => {
     `}>
       {/* Logo Section */}
       <div className="h-20 flex items-center justify-center px-4 border-b border-gray-50">
-        <Link to='/dashboard'>
+        <Link to={`/dashboard/${id}`}>
         <img
           src="/api/placeholder/120/40"
           alt="DUMRS-ICON"
@@ -62,12 +63,12 @@ const Sidebar = () => {
       {/* Navigation Items */}
       <nav className="flex-1 pt-6">
         {menuItems.map(item => {
-          const isActive = location.pathname === `/${item.id}`;
+          const isActive = location.pathname === `/${item.id}/${id}`;
           
           return (
             <Link
               key={item.id}
-              to={`/${item.id}`}
+              to={`/${item.id}/${id}`}
               className={`
                 w-full
                 flex items-center

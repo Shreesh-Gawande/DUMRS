@@ -15,12 +15,12 @@ function App() {
     <BrowserRouter>
         <Routes>
           <Route path="/" element={<DoctorLogin/>}/>
-          <Route path="/dashboard" element={<DashboardPage/>}/>
-          <Route path="/medical-info" element={<MedicalProfile/>}/>
+          <Route path="/dashboard/:patient_id" element={<DashboardPage/>}/>
+          <Route path="/medical-info/:patient_id" element={<MedicalProfile/>}/>
           <Route path="/:patientId/add-record/" element={<AddMedicalRecord/>}/>
           <Route path="/add-patient" element={<PatientRegistrationForm/>}/>
           <Route path="/add-hospital" element={<HospitalRegistrationForm/>}/>
-          <Route path="/profile" element={<Profile/>}/>
+          <Route path="/profile/:id" element={<Profile/>}/>
           <Route path="/admin/dashboard" element={<AdminDashboard/>}/>
           <Route path="/doctor/dashboard" element={<HospitalDashboard/>}/>
        </Routes>

@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const express = require("express");
 const router = express.Router();
 const Patient = require("../models/Patient");
+const Patient_Personal=require("../models/Patient_Personal")
 const Record = require("../models/Records");
 const { retrieveFileUrl, uploadFileToS3 } = require("../controllers/S3Storage");
 
@@ -18,10 +19,13 @@ const upload = multer({ storage: storage });
 // Get Patient Personal Data
 router.get('/:id/personalData', async (req, res) => {
   try {
-    const patient = await Patient.findById(req.params.id).select('fullName dateOfBirth age gender phoneNumber email address');
+    console.log(req.params.id);
+    
+    const patient = await Patient_Personal.find({patient_id:req.params.id}).select('fullName dateOfBirth age gender phoneNumber email address');
     if (!patient) {
       return res.status(404).json({ error: "Patient not found" });
     }
+    console.log(patient)
     res.status(200).json(patient);
   } catch (error) {
     console.error(error);
