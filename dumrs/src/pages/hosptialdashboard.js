@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Search, LogOut } from 'lucide-react';
-
+import { useNavigate } from 'react-router-dom';
 const HospitalDashboard = () => {
+    const navigate=useNavigate()
   const [patientId, setPatientId] = useState('');
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (patientId.length === 10) {
-      window.location.href = '/dashboard';
+      navigate(`/dashboard/${patientId}`)
     }
   };
 

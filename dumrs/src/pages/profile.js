@@ -8,14 +8,16 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { id } = useParams();
+console.log(id);
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await fetch(`/api/${id}/personalData`);
+        const response = await fetch(`http://localhost:4000/patient/${id}/personalData`);
         if (!response.ok) throw new Error('Failed to fetch profile data');
         const data = await response.json();
-        setProfileData(data);
+        console.log(data)
+        setProfileData(data[0]);
         setError(null);
       } catch (err) {
         setError(err.message);
@@ -48,9 +50,9 @@ const Profile = () => {
 
   return (
     <div className='flex'>
-        <Sidebar/>
-        <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
+        <Sidebar id={id}/>
+        <div className="w-[100%] min-h-screen bg-gray-50 p-6">
+      <div className=" w-[100%]">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-4xl font-bold text-purple-600">Personal Profile</h1>
@@ -79,9 +81,9 @@ const Profile = () => {
               </div>
               <div>
                 <h2 className="text-2xl font-semibold text-gray-800">
-                  {profileData?.fullName}
+                  {profileData.fullName}
                 </h2>
-                <p className="text-gray-500 mt-1">{profileData?.email}</p>
+                <p className="text-gray-500 mt-1">{profileData.email}</p>
               </div>
             </div>
             <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all duration-200 flex items-center gap-2">
@@ -93,12 +95,12 @@ const Profile = () => {
           {/* Profile Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
             {[
-              { label: 'Date of Birth', value: profileData?.dateOfBirth },
-              { label: 'Age', value: profileData?.age },
-              { label: 'Gender', value: profileData?.gender },
-              { label: 'Phone Number', value: profileData?.phoneNumber },
-              { label: 'Email', value: profileData?.email },
-              { label: 'Address', value: profileData?.address }
+              { label: 'Date of Birth', value: profileData.dateOfBirth },
+              { label: 'Age', value: profileData.age },
+              { label: 'Gender', value: profileData.gender },
+              { label: 'Phone Number', value: profileData.phoneNumber },
+              { label: 'Email', value: profileData.email },
+              { label: 'Address', value: profileData.address }
             ].map((field, index) => (
               <div key={index} className="space-y-2">
                 <label className="text-sm font-medium text-gray-500">

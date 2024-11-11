@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { PlusCircle, AlertCircle, FileUp, ChevronDown, ChevronUp, Syringe, Stethoscope, Building2, X, Check } from 'lucide-react';
 import Sidebar from '../components/sidebar';
+import { useParams } from 'react-router-dom';
 
 const Section = ({ title, icon, id, isActive, onToggle, children }) => (
   <div className="bg-white rounded-xl p-6 shadow-sm space-y-4">
@@ -25,8 +26,9 @@ const AddMedicalRecord = () => {
   const [formProgress, setFormProgress] = useState(0);
   const [validationErrors, setValidationErrors] = useState({});
   
+  const {patientId} = useParams();
+
   const [formData, setFormData] = useState({
-    id: '',
     visitType: '',
     visitDate: '',
     chiefComplaint: '',
@@ -35,30 +37,21 @@ const AddMedicalRecord = () => {
       bloodPressure: '',
       heartRate: '',
       temperature: '',
-      respiratoryRate: '',
-      oxygenSaturation: '',
     },
-    diagnosticTests: [],
     labResults: {
       bloodTests: [],
       urineTests: [],
       otherTests: []
     },
-    radiologyReports: [],
-    impressions: '',
-    diagnosis: '',
     dischargeSummary: {
       admissionDate: '',
       dischargeDate: '',
       inpatientSummary: '',
-      referrals: []
     },
     procedures: {
       surgeryType: '',
       surgeryDate: '',
-      anesthesiaType: '',
       procedureSummary: '',
-      complications: '',
       postOpInstructions: ''
     }
   });
@@ -97,7 +90,6 @@ const AddMedicalRecord = () => {
     if (!formData.vitalSigns.heartRate) errors.heartRate = 'Heart rate is required';
     if (!formData.vitalSigns.temperature) errors.temperature = 'Temperature is required';
     
-    if (!formData.diagnosis) errors.diagnosis = 'Diagnosis is required';
     
     if (includeHospitalStay) {
       if (!formData.dischargeSummary.admissionDate) errors.admissionDate = 'Admission date is required';
@@ -111,6 +103,130 @@ const AddMedicalRecord = () => {
     
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+  const formatFormDataForSubmission = () => {
+    const formDataToSubmit = new FormData();
+    
+    // Add basic fields
+    formDataToSubmit.append('patientId', patientId);
+    formDataToSubmit.append('visitType', formData.visitType);
+    formDataToSubmit.append('visitDate', formData.visitDate);
+    formDataToSubmit.append('chiefComplaint', formData.chiefComplaint);
+    
+    // Add vital signs as a JSON string
+    formDataToSubmit.append('vitalSigns', JSON.stringify({
+      bloodPressure: formData.vitalSigns.bloodPressure,
+      heartRate: formData.vitalSigns.heartRate,
+      temperature: formData.vitalSigns.temperature,
+    }));
+
+    // Add hospital stay information if included
+    if (includeHospitalStay) {
+      formDataToSubmit.append('dischargeSummary', JSON.stringify({
+        admissionDate: formData.dischargeSummary.admissionDate,
+        dischargeDate: formData.dischargeSummary.dischargeDate,
+        inpatientSummary: formData.dischargeSummary.inpatientSummary,
+      }));
+    }
+
+    // Add surgery information if included
+    if (includeSurgery) {
+      formDataToSubmit.append('procedures', JSON.stringify({
+        surgeryType: formData.procedures.surgeryType,
+        surgeryDate: formData.procedures.surgeryDate,
+        procedureSummary: formData.procedures.procedureSummary,
+        postOpInstructions: formData.procedures.postOpInstructions,
+      }));
+    }
+    
+    // Properly append files with their actual File objects
+    formData.labResults.bloodTests.forEach((fileData, index) => {
+      formDataToSubmit.append(`bloodTests`, fileData.file);
+    });
+    
+    formData.labResults.urineTests.forEach((fileData, index) => {
+      formDataToSubmit.append(`urineTests`, fileData.file);
+    });
+    
+    formData.labResults.otherTests.forEach((fileData, index) => {
+      formDataToSubmit.append(`otherTests`, fileData.file);
+    });
+
+    return formDataToSubmit;
+  };
+  
+
+  const handleFormSubmission = async (e) => {
+    e.preventDefault();
+    console.log(formData);
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    try {
+      const formData = formatFormDataForSubmission();
+      
+      const response = await fetch(`http://localhost:4000/patient/${patientId}/add-record`, {
+        method: 'POST',
+        body: formData, // Send FormData directly
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save medical record');
+      }
+      
+      const savedRecord = await response.json();
+      console.log('Record saved successfully:', savedRecord);
+      
+    } catch (error) {
+      console.error('Error submitting medical record:', error);
+    }
+  };
+
+  // File handling functions remain the same
+  const handleFileUpload = (fieldName, files) => {
+    const maxSize = 5 * 1024 * 1024;
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    
+    const fileList = Array.from(files).map(file => {
+      if (file.size > maxSize) {
+        setValidationErrors(prev => ({
+          ...prev,
+          [fieldName]: `File ${file.name} exceeds 5MB limit`
+        }));
+        return null;
+      }
+      
+      if (!allowedTypes.includes(file.type)) {
+        setValidationErrors(prev => ({
+          ...prev,
+          [fieldName]: `File ${file.name} must be JPEG, PNG, or PDF`
+        }));
+        return null;
+      }
+      
+      return {
+        file: file, // Store the actual File object
+        name: file.name,
+        url: URL.createObjectURL(file),
+        type: file.type,
+        size: file.size,
+      };
+    }).filter(file => file !== null);
+    
+    setFormData(prev => {
+      if (fieldName === 'bloodTests' || fieldName === 'urineTests' || fieldName === 'otherTests') {
+        return {
+          ...prev,
+          labResults: {
+            ...prev.labResults,
+            [fieldName]: [...prev.labResults[fieldName], ...fileList]
+          }
+        };
+      }
+      return prev;
+    });
   };
 
   useEffect(() => {
@@ -136,8 +252,7 @@ const AddMedicalRecord = () => {
         formData.visitDate,
         formData.chiefComplaint,
         formData.vitalSigns.bloodPressure,
-        formData.vitalSigns.heartRate,
-        formData.diagnosis
+        formData.vitalSigns.heartRate
       ];
       
       const optionalFields = [
@@ -164,7 +279,6 @@ const AddMedicalRecord = () => {
     formData.chiefComplaint,
     formData.vitalSigns.bloodPressure,
     formData.vitalSigns.heartRate,
-    formData.diagnosis,
     formData.dischargeSummary.admissionDate,
     formData.dischargeSummary.dischargeDate,
     formData.procedures.surgeryType,
@@ -173,52 +287,7 @@ const AddMedicalRecord = () => {
     includeSurgery
   ]);
 
-  // File handling functions remain the same
-  const handleFileUpload = (fieldName, files) => {
-    const maxSize = 5 * 1024 * 1024;
-    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-    
-    const fileList = Array.from(files).map(file => {
-      if (file.size > maxSize) {
-        setValidationErrors(prev => ({
-          ...prev,
-          [fieldName]: `File ${file.name} exceeds 5MB limit`
-        }));
-        return null;
-      }
-      
-      if (!allowedTypes.includes(file.type)) {
-        setValidationErrors(prev => ({
-          ...prev,
-          [fieldName]: `File ${file.name} must be JPEG, PNG, or PDF`
-        }));
-        return null;
-      }
-      
-      return {
-        name: file.name,
-        url: URL.createObjectURL(file),
-        type: file.type,
-        size: file.size
-      };
-    }).filter(file => file !== null);
-    
-    setFormData(prev => {
-      if (fieldName === 'bloodTests' || fieldName === 'urineTests' || fieldName === 'otherTests') {
-        return {
-          ...prev,
-          labResults: {
-            ...prev.labResults,
-            [fieldName]: [...prev.labResults[fieldName], ...fileList]
-          }
-        };
-      }
-      return {
-        ...prev,
-        [fieldName]: [...prev[fieldName], ...fileList]
-      };
-    });
-  };
+  
   
   const removeFile = (fieldName, fileIndex) => {
     setFormData(prev => {
@@ -461,23 +530,6 @@ const AddMedicalRecord = () => {
               </div>
             </div>
 
-            {/* Diagnosis */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis*</label>
-              <textarea
-                name="diagnosis"
-                className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${
-                  validationErrors.diagnosis ? 'border-red-500' : 'border-gray-300'
-                }`}
-                rows={3}
-                value={formData.diagnosis}
-                onChange={handleInputChange}
-                placeholder="Enter diagnosis details"
-              />
-              {validationErrors.diagnosis && (
-                <p className="text-red-500 text-sm mt-1">{validationErrors.diagnosis}</p>
-              )}
-            </div>
           </div>
         </Section>
 
@@ -649,9 +701,7 @@ const AddMedicalRecord = () => {
                   urineTests: [],
                   otherTests: []
                 },
-                radiologyReports: [],
                 impressions: '',
-                diagnosis: '',
                 dischargeSummary: {
                   admissionDate: '',
                   dischargeDate: '',
@@ -675,12 +725,7 @@ const AddMedicalRecord = () => {
           <button
             type="submit"
             className="px-4 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700"
-            onClick={() => {
-              if (validateForm()) {
-                console.log('Form submitted:', formData);
-                // Handle form submission
-              }
-            }}
+            onClick={handleFormSubmission}
           >
             Save Record
           </button>

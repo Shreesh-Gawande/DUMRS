@@ -27,7 +27,6 @@ router.post('/patient/new', async (req, res) => {
             fullName,
             patient_id,
             dateOfBirth,
-            age,
             weight,
             height,
             gender,
@@ -42,7 +41,7 @@ router.post('/patient/new', async (req, res) => {
             immunizationRecords,
             healthInsuranceDetails
         } = req.body;
-        console.log("Request Body:", req.body);
+        console.log("Request Body:", req.body)
         if (!phoneNumber || phoneNumber === null) {
             return res.status(400).json({ message: "Phone number is required and cannot be null" });
         }
@@ -83,13 +82,26 @@ router.post('/patient/new', async (req, res) => {
         // Save the patient to the database
         await patient.save();
 
+        const dob = new Date(dateOfBirth); // Convert the input to a Date object
+    const today = new Date(); // Get the current date
+
+    let age = today.getFullYear() - dob.getFullYear(); // Calculate the age in years
+    const monthDiff = today.getMonth() - dob.getMonth();
+    const dayDiff = today.getDate() - dob.getDate();
+
+    // Adjust the age if the birthday hasn't occurred this year
+    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+        age--;
+    }
+
+
         // Create a new patient document in the Patient_Personal model
         const patientPersonal = new Patient_Personal({
             fullName,
             patient_id: patientId,
             patient_password: hashedPassword,
             dateOfBirth: parsedDateOfBirth,
-            age,
+            age:age,
             weight,
             height,
             gender,
@@ -97,7 +109,7 @@ router.post('/patient/new', async (req, res) => {
             email,
             emergency_phone,
             address
-        });
+        })
 
         // Save the patient personal information to the database
         await patientPersonal.save();
@@ -186,6 +198,7 @@ router.get('/patient/:patient_id', async (req, res) => {
                 immunizationRecords: patient.immunizationRecords,
                 healthInsuranceDetails: patient.healthInsuranceDetails,
                 medicalRecords: patient.medicalRecords,
+                surgeries:patient.surgeries
             }
         });
 

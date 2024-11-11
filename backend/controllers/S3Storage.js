@@ -13,21 +13,22 @@ const s3 = new S3Client({
 const bucket_name = process.env.BUCKET_NAME;
 
 
-const uploadFileToS3 = async (patientId,file)=>{
+const uploadFileToS3 = async (key,file)=>{
+
     const uploadParams  = {
         Bucket: bucket_name,
-        Key: `${patientId}/${Date.now()}-${file.originalname}`, 
+        Key: key, 
         Body: file.buffer,
         ContentType: file.mimetype,
     }
     try {
-        const data = await s3.send(new PutObjectCommand(uploadParams));
+        await s3.send(new PutObjectCommand(uploadParams));
         console.log(`File uploaded!`);
-        uploadedFilesInfo.push({key: uploadParams.Key, type: uploadParams.ContentType});
         
     } catch (error) {
         console.log(`Error while uploading: ${error}`);
     }
+
 }
 
 const retrieveFileUrl = async (patientId, key) => {
