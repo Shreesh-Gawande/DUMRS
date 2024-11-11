@@ -116,21 +116,23 @@ router.get('/:id/records/reports', async (req, res) => {
 
 
 // Get Most Recent Record (e.g., for showing the latest visit summary)
-router.get('/:id/records/recent', async (req, res) => {
+router.get('/records/recent/:id', async (req, res) => {
   try {
-    const record = await Record.findOne({ patientId: req.params.id })
+    const records = await Record.find({ patient_id: req.params.id })
       .sort({ visitDate: -1 }) // sort by latest date
-      .limit(1);                                                     // fethcing only most recent record, change limit value to show more.
+      .limit(5); // fetch only the 5 most recent records
 
-    if (!record) {
+    if (!records || records.length === 0) {
       return res.status(404).json({ error: "No recent records found" });
     }
-    res.status(200).json(record);
+
+    res.status(200).json(records);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 // Add or update allergies
 router.patch("/:id/allergies", async (req, res) => {

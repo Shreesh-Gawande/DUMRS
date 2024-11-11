@@ -42,7 +42,7 @@ const PatientPersonalSchema = new Schema(
     phoneNumber: {
       type: String,
       required: true,
-      unique: true,
+      unique: false,
     },
     email: {
       type: String,
@@ -53,7 +53,7 @@ const PatientPersonalSchema = new Schema(
     emergency_phone: {
       type: String,
       required: true,
-      unique: true,
+      unique: false,
     },
     address: {
       street: { type: String },

@@ -6,6 +6,7 @@ const Patient = require("../models/Patient");
 const Hospital = require("../models/Hospital");
 const crypto = require('crypto');
 const Patient_Personal = require("../models/Patient_Personal");
+const { body, validationResult } = require('express-validator');
 
 function generateRandomPassword() {
     return crypto.randomBytes(8).toString('hex'); // Generates a 16-character password
@@ -20,20 +21,12 @@ function generateRandomPassword() {
     return decimalValue % 9000000000 + 1000000000; // Ensures the number is between 1000000000 and 9999999999
 }
 
+
+
 // Create a new patient
-router.post('/patient/new', async (req, res) => {
+router.post('/new/:patient_id', async (req, res) => {
     try {
         const {
-            fullName,
-            patient_id,
-            dateOfBirth,
-            weight,
-            height,
-            gender,
-            phoneNumber,
-            email,
-            emergency_phone,
-            address,
             bloodType,
             allergies,
             chronicConditions,
@@ -41,34 +34,17 @@ router.post('/patient/new', async (req, res) => {
             immunizationRecords,
             healthInsuranceDetails
         } = req.body;
-        console.log("Request Body:", req.body)
-        if (!phoneNumber || phoneNumber === null) {
-            return res.status(400).json({ message: "Phone number is required and cannot be null" });
-        }
-        const existingPhoneNumber = await Patient_Personal.findOne({ phoneNumber });
-        if (existingPhoneNumber) {
-            return res.status(400).json({ message: "Phone number already exists" });
-        }
 
-        // Generate a random password and hash it
-        const password = generateRandomPassword();
-        console.log('Generated password:', password);
-        
-        const hashedPassword = await bcrypt.hash(password, 10); 
+        // Get patient_id from URL parameters
+        const patientId = req.params.patient_id;
 
-        // Generate a random patient ID
-        const patientId = generateRandomPatientId();
-
-        // Check if the patient already exists
+        // Check if the patient ID already exists
         const existingPatient = await Patient.findOne({ patient_id: patientId });
         if (existingPatient) {
             return res.status(400).json({ message: 'Patient ID already exists' });
         }
 
-        // Parse dateOfBirth to a valid date format
-        const parsedDateOfBirth = new Date(dateOfBirth);
-
-        // Create a new patient document in the Patient model
+        // Create a new patient document with the given patient_id
         const patient = new Patient({
             patient_id: patientId,
             bloodType,
@@ -82,38 +58,6 @@ router.post('/patient/new', async (req, res) => {
         // Save the patient to the database
         await patient.save();
 
-        const dob = new Date(dateOfBirth); // Convert the input to a Date object
-    const today = new Date(); // Get the current date
-
-    let age = today.getFullYear() - dob.getFullYear(); // Calculate the age in years
-    const monthDiff = today.getMonth() - dob.getMonth();
-    const dayDiff = today.getDate() - dob.getDate();
-
-    // Adjust the age if the birthday hasn't occurred this year
-    if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
-        age--;
-    }
-
-
-        // Create a new patient document in the Patient_Personal model
-        const patientPersonal = new Patient_Personal({
-            fullName,
-            patient_id: patientId,
-            patient_password: hashedPassword,
-            dateOfBirth: parsedDateOfBirth,
-            age:age,
-            weight,
-            height,
-            gender,
-            phoneNumber,
-            email,
-            emergency_phone,
-            address
-        })
-
-        // Save the patient personal information to the database
-        await patientPersonal.save();
-
         res.status(201).json({ message: 'Patient created successfully', patient });
     } catch (error) {
         console.error('Error during patient creation:', error);
@@ -121,6 +65,78 @@ router.post('/patient/new', async (req, res) => {
     }
 });
 
+
+router.post('/patient/new', async (req, res) => {
+    try {
+        const {
+            fullName,
+            dateOfBirth,
+            weight,
+            height,
+            gender,
+            phoneNumber,
+            email,
+            emergencyPhone,
+            address
+        } = req.body;
+
+        if (!phoneNumber || phoneNumber === null) {
+            return res.status(400).json({ message: "Phone number is required and cannot be null" });
+        }
+
+        // Check if phone number already exists
+        const existingPhoneNumber = await Patient_Personal.findOne({ phoneNumber });
+        if (existingPhoneNumber) {
+            return res.status(400).json({ message: "Phone number already exists" });
+        }
+
+        // Generate a random password and hash it
+        const password = generateRandomPassword();
+        console.log('Generated password:', password);
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Generate a random patient ID
+        const patientId = generateRandomPatientId();
+
+        // Parse dateOfBirth to a valid date format
+        const parsedDateOfBirth = new Date(dateOfBirth);
+
+        // Calculate age based on date of birth
+        const dob = new Date(dateOfBirth);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        const dayDiff = today.getDate() - dob.getDate();
+
+        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+            age--;
+        }
+
+        // Create a new patient personal document
+        const patientPersonal = new Patient_Personal({
+            fullName,
+            patient_id: patientId,
+            patient_password: hashedPassword,
+            dateOfBirth: parsedDateOfBirth,
+            age: age,
+            weight,
+            height,
+            gender,
+            phoneNumber,
+            email,
+            emergency_phone:emergencyPhone,
+            address
+        });
+
+        // Save the patient personal information to the database
+        await patientPersonal.save();
+
+        res.status(201).json({ message: 'Patient personal information created successfully', patientPersonal });
+    } catch (error) {
+        console.error('Error during patient personal creation:', error);
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+});
 router.get('/patient/staticData/:patient_id', async (req, res) => {
     const { patient_id } = req.params;
   
@@ -150,6 +166,56 @@ router.get('/patient/staticData/:patient_id', async (req, res) => {
       return res.status(500).json({ error: "Internal Server Error" });
     }
   });
+  router.put('/patient/:patient_id', async (req, res) => {
+    try {
+      const { patient_id } = req.params;
+      const { section, newEntry } = req.body;
+  
+      
+      // Add timestamps and ID to the new entry
+      const entryWithMetadata = {
+        ...newEntry,
+      };
+  
+      // Find patient and update the specific section
+      const updatedPatient = await Patient.findOneAndUpdate(
+        {patient_id:patient_id},
+        { 
+          $push: { [section]: entryWithMetadata },
+          $set: { updated_at: new Date() }
+        },
+        { 
+          new: true,
+          runValidators: true
+        }
+      );
+  
+      if (!updatedPatient) {
+        return res.status(404).json({
+          success: false,
+          message: 'Patient not found'
+        });
+      }
+  
+      
+      res.status(200).json({
+        success: true,
+        message: 'Entry added successfully',
+        data: {
+          patient: updatedPatient,
+          newEntry: entryWithMetadata
+        }
+      });
+  
+    } catch (error) {
+      console.error('Error updating patient record:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Error updating patient record',
+        error: error.message
+      });
+    }
+  });
   
 
 router.get('/patient/:patient_id', async (req, res) => {
@@ -175,6 +241,7 @@ router.get('/patient/:patient_id', async (req, res) => {
                 immunizationRecords: patient.immunizationRecords,
                 healthInsuranceDetails: patient.healthInsuranceDetails,
                 medicalRecords: patient.medicalRecords,
+                surgeries:patient.surgeries
             }
         });
 

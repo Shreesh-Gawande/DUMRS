@@ -99,7 +99,8 @@ export function DoctorLogin() {
         body: JSON.stringify({
           authority_id: id,
           authority_password: password
-        })
+        }),
+        credentials:"include"
       });
       
       const data = await res.json();

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect,useContext } from 'react';
 import { 
   Droplets, 
   AlertCircle, 
@@ -9,64 +9,145 @@ import {
   AlertOctagon,
   ChevronRight,
   Plus,
-  X
+  X,
+  Loader
 } from 'lucide-react';
 import Sidebar from '../components/sidebar';
+import { useParams } from 'react-router-dom';
+import { RoleContext } from '../components/private';
 const userRole=localStorage.getItem('userRole')
 const MedicalProfile = () => {
-  const [data, setData] = useState({
-    bloodType: "A+",
-    allergies: [
-      { substance: "Penicillin", reaction: "Severe rash and breathing difficulties" },
-      { substance: "Peanuts", reaction: "Anaphylaxis" },
-      { substance: "Latex", reaction: "Skin irritation" }
-    ],
-    chronicConditions: [
-      { condition: "Asthma", dateDiagnosed: "2020-03-15" },
-      { condition: "Type 2 Diabetes", dateDiagnosed: "2019-08-22" }
-    ],
-    familyMedicalHistory: [],
-    immunizationRecords: [
-      { vaccine: "COVID-19", dateReceived: "2023-01-15", boosterShot: true },
-      { vaccine: "Flu Shot", dateReceived: "2023-09-30", boosterShot: false },
-      { vaccine: "Tetanus", dateReceived: "2020-06-12", boosterShot: true }
-    ],
-    surgeries: [
-      { 
-        procedure: "Appendectomy",
-        date: "2022-05-15",
-        hospital: "Metro General Hospital",
-        surgeon: "Dr. Sarah Wilson",
-        notes: "Laparoscopic procedure, routine recovery"
+  const { patient_id } = useParams();
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const userRole = useContext(RoleContext)
+
+  useEffect(() => {
+    const fetchPatientData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch(`http://localhost:4000/users/patient/${patient_id}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        setData(result.patient);
+      } catch (error) {
+        console.error('Error fetching patient data:', error);
+        setError('Failed to load patient data. Please try again later.');
+      } finally {
+        setLoading(false);
       }
-    ],
-    healthInsuranceDetails: {
-      provider: "HealthGuard Insurance",
-      coverage: "Comprehensive Family Plan",
-      policyNumber: "HG-2024-78945",
-      coPayAmount: 25
+    };
+
+    fetchPatientData();
+  }, [patient_id]);
+
+  const handleAddEntry = async (section, newEntry) => {
+    try {
+      const response = await fetch(`http://localhost:4000/users/patient/${patient_id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          section,
+          newEntry
+        }),
+      });
+  
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to add entry');
+      }
+  
+      setData(prev => ({
+        ...prev,
+        [section]: [...prev[section], result.data.newEntry]
+      }));
+     
+  
+    } catch (error) {
+      console.error('Error adding entry:', error);
+    
     }
-  });
-  
-  
-
-  const handleAddEntry = (section, newEntry) => {
-    setData(prev => ({
-      ...prev,
-      [section]: [...prev[section], newEntry]
-    }));
   };
 
-  const updateInsurance = (newDetails) => {
-    setData(prev => ({
-      ...prev,
-      healthInsuranceDetails: newDetails
-    }));
+  const updateInsurance = async (newDetails) => {
+    try {
+      const response = await fetch(`/api/patient/${patient_id}/insurance`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newDetails),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      setData(prev => ({
+        ...prev,
+        healthInsuranceDetails: newDetails
+      }));
+    } catch (error) {
+      console.error('Error updating insurance:', error);
+      // You might want to show an error message to the user here
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50">
+        <div className="text-center">
+          <Loader className="w-8 h-8 animate-spin text-violet-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading patient data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50">
+        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-xl shadow-lg">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Profile</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50">
+        <div className="text-center max-w-md mx-auto p-6 bg-white rounded-xl shadow-lg">
+          <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">No Data Found</h2>
+          <p className="text-gray-600">No medical records found for this patient.</p>
+        </div>
+      </div>
+    );
+  }
+  
 
   return (
     <div className="flex">
-      <Sidebar />
+      <Sidebar id={patient_id}/>
       <div className="w-full min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 p-4 md:p-6">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-lg border border-violet-200 p-6 mb-6 hover:shadow-xl transition-shadow">
