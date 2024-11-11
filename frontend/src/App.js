@@ -10,7 +10,7 @@ import AdminDashboard from "./pages/admindashboard";
 import HospitalRegistrationForm from "./pages/addhospital";
 import HospitalDashboard from "./pages/hosptialdashboard";
 import { PrivateRoute } from "./components/private";
-import PatientRecords from "./pages/records";
+import PatientRecords from "./pages/records"
 
 function App() {
   return (
