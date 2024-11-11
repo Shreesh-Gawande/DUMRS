@@ -1,6 +1,5 @@
 // routes for fetching patient data...
 
-const mongoose = require('mongoose');
 const express = require("express");
 const router = express.Router();
 const Patient = require("../models/Patient");
@@ -51,14 +50,15 @@ router.get('/:id/medicalData', async (req, res) => {
 router.get('/:id/records', async (req, res) => {
   const { page = 1, limit = 10 } = req.query;                   // default limit=10, change it if required
   try {
-    const records = await Record.find({ patientId: req.params.id })
+    const records = await Record.find({ patient_id: req.params.id })
       .sort({ visitDate: -1 }) // sort by recent visits
       .limit(limit * 1) // convert limit to a number
       .skip((page - 1) * limit) // skip the records of previous pages
       .exec();
 
-    const count = await Record.countDocuments({ patientId: req.params.id });
-
+    const count = await Record.countDocuments({ patient_id: req.params.id });
+    console.log(records);
+    
     if (!records || records.length === 0) {
       return res.status(404).json({ error: "No records found" });
     }
@@ -181,13 +181,12 @@ router.patch("/:id/immunizations", async (req, res) => {
 });
 
 
-
 router.post('/:id/add-record', upload.fields([
   { name: 'bloodTests', maxCount: 3 },
   { name: 'urineTests', maxCount: 3 },
   { name: 'otherTests', maxCount: 3 },
 ]), async (req, res) => {
-  const { patientId, visitType, visitDate, chiefComplaint, vitalSigns } = req.body;
+  const { patientId, visitType, visitDate, chiefComplaint, vitalSigns, dischargeSummary, procedures } = req.body;
 
   // Get uploaded files
   const bloodTestFiles = req.files['bloodTests'] || [];
@@ -223,14 +222,30 @@ router.post('/:id/add-record', upload.fields([
     const uploadedFiles = await Promise.all(fileUploadPromises);
     diagnosticTests.push(...uploadedFiles);
 
+    const parsedVitalSigns = JSON.parse(vitalSigns);
+    const parsedDischargeSummary = dischargeSummary ? JSON.parse(dischargeSummary) : null;
+    const parsedProcedures = procedures ? JSON.parse(procedures) : null;
+
+
     // Create and save the new record
     const newRecord = new Record({
       patient_id: patientId,
       visitDate: new Date(visitDate),
       visitType,
       chiefComplaint,
-      vitalSigns: JSON.parse(vitalSigns),
+       vitalSigns: parsedVitalSigns,
       diagnosticInformation: { testResults: diagnosticTests },
+      dischargeSummary: parsedDischargeSummary ? {
+        admissionDate: new Date(parsedDischargeSummary.admissionDate),
+        dischargeDate: new Date(parsedDischargeSummary.dischargeDate),
+        inpatientSummary: parsedDischargeSummary.inpatientSummary,
+      } : null,
+      proceduralDetails: parsedProcedures ? {
+        surgeryType: parsedProcedures.surgeryType,
+        surgeryDate: new Date(parsedProcedures.surgeryDate),
+        procedureSummary: parsedProcedures.procedureSummary,
+        postOpInstructions: parsedProcedures.postOpInstructions,
+      } : null,
     });
 
     const savedRecord = await newRecord.save();

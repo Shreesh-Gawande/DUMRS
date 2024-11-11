@@ -9,6 +9,7 @@ import Profile from "./pages/profile";
 import AdminDashboard from "./pages/admindashboard";
 import HospitalRegistrationForm from "./pages/addhospital";
 import HospitalDashboard from "./pages/hosptialdashboard";
+import Records from "./pages/records";
 
 function App() {
   return (
@@ -17,10 +18,11 @@ function App() {
           <Route path="/" element={<DoctorLogin/>}/>
           <Route path="/dashboard/:patient_id" element={<DashboardPage/>}/>
           <Route path="/medical-info/:patient_id" element={<MedicalProfile/>}/>
-          <Route path="/:patientId/add-record/" element={<AddMedicalRecord/>}/>
+          <Route path="/add-record/:patientId" element={<AddMedicalRecord/>}/>
           <Route path="/add-patient" element={<PatientRegistrationForm/>}/>
           <Route path="/add-hospital" element={<HospitalRegistrationForm/>}/>
           <Route path="/profile/:id" element={<Profile/>}/>
+          <Route path="/records/:id" element={<Records/>}/>
           <Route path="/admin/dashboard" element={<AdminDashboard/>}/>
           <Route path="/doctor/dashboard" element={<HospitalDashboard/>}/>
        </Routes>

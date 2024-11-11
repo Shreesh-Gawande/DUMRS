@@ -104,6 +104,7 @@ const AddMedicalRecord = () => {
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
   const formatFormDataForSubmission = () => {
     const formDataToSubmit = new FormData();
     
@@ -166,6 +167,7 @@ const AddMedicalRecord = () => {
     
     try {
       const formData = formatFormDataForSubmission();
+      console.log("request sending:",formData);
       
       const response = await fetch(`http://localhost:4000/patient/${patientId}/add-record`, {
         method: 'POST',

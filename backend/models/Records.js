@@ -46,7 +46,7 @@ const recordSchema = new Schema({
   proceduralDetails: {
     surgeryType: String,
     surgeryDate: Date,
-    ProcedureSummary: String, // Brief surgical summary
+    procedureSummary: String, // Brief surgical summary
     postOpInstructions: String,
   },
 
