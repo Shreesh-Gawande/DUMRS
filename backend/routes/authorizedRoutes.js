@@ -138,7 +138,30 @@ router.get('/patient/staticData/:patient_id', async (req, res) => {
       return res.status(500).json({ error: "Internal Server Error" });
     }
   });
+  router.put("/patient/:patient_id", async (req, res) => {
+    try {
+      const { patient_id } = req.params;
+      const updatedData = req.body;
   
+      // Check if the patient exists by patient_id
+      const patient = await Patient.findOne({ patient_id });
+      if (!patient) {
+        return res.status(404).json({ message: "Patient not found" });
+      }
+  
+      // Update the patient record with the new data
+      const updatedPatient = await Patient.findOneAndUpdate(
+        { patient_id },
+        updatedData,
+        { new: true, runValidators: true }
+      );
+  
+      res.status(200).json({ message: "Patient record updated", patient: updatedPatient });
+    } catch (error) {
+      console.error("Error updating patient:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  });
 
 router.get('/patient/:patient_id', async (req, res) => {
     try {
