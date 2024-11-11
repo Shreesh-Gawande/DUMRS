@@ -17,7 +17,7 @@ function App() {
           <Route path="/" element={<DoctorLogin/>}/>
           <Route path="/dashboard/:patient_id" element={<DashboardPage/>}/>
           <Route path="/medical-info/:patient_id" element={<MedicalProfile/>}/>
-          <Route path="/add-record/:patient_id" element={<AddMedicalRecord/>}/>
+          <Route path="/add-record/:patientId" element={<AddMedicalRecord/>}/>
           <Route path="/add-patient" element={<PatientRegistrationForm/>}/>
           <Route path="/add-hospital" element={<HospitalRegistrationForm/>}/>
           <Route path="/profile/:id" element={<Profile/>}/>

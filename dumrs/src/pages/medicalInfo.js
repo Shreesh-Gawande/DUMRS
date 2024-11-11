@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import Sidebar from '../components/sidebar';
 import { useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 const userRole=localStorage.getItem('userRole')
 const MedicalProfile = () => {
   const { patient_id } = useParams();
@@ -54,21 +55,27 @@ const MedicalProfile = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newEntry),
+        body: JSON.stringify({
+          section,
+          newEntry
+        }),
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+  
       const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to add entry');
+      }
+  
       setData(prev => ({
         ...prev,
-        [section]: [...prev[section], newEntry]
+        [section]: [...prev[section], result.data.newEntry]
       }));
+      toast.success('Entry added successfully');
+  
     } catch (error) {
       console.error('Error adding entry:', error);
-      // You might want to show an error message to the user here
+      toast.error(error.message || 'Failed to add entry');
     }
   };
 

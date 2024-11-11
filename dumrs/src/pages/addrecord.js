@@ -11,7 +11,7 @@ const AlertMessage = ({ type, message }) => {
   };
 
   return (
-    <div className={`sticky top-10 p-4 rounded-lg border ${colors[type]} flex items-center gap-3`}>
+    <div className={`p-4 rounded-lg border ${colors[type]} flex items-center gap-3`}>
       {type === 'success' && <Check className="text-green-500" size={20} />}
       {type === 'error' && <AlertCircle className="text-red-500" size={20} />}
       {type === 'warning' && <AlertCircle className="text-yellow-500" size={20} />}
@@ -776,6 +776,24 @@ const AddMedicalRecord = () => {
             )}
           </button>
         </div>
+        <LoadingOverlay 
+          isVisible={isSubmitting} 
+          message="Saving medical record..." 
+        />
+        
+        {submitSuccess && (
+          <AlertMessage
+            type="success"
+            message="Medical record saved successfully!"
+          />
+        )}
+        
+        {submitError && (
+          <AlertMessage
+            type="error"
+            message={submitError}
+          />
+        )}
       </div>
     </div>
   );
