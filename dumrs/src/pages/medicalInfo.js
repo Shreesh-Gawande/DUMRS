@@ -49,8 +49,8 @@ const MedicalProfile = () => {
 
   const handleAddEntry = async (section, newEntry) => {
     try {
-      const response = await fetch(`/api/patient/${patient_id}/${section}`, {
-        method: 'POST',
+      const response = await fetch(`http://localhost:4000/users/patient/${patient_id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },

@@ -6,6 +6,7 @@ const Patient = require("../models/Patient");
 const Hospital = require("../models/Hospital");
 const crypto = require('crypto');
 const Patient_Personal = require("../models/Patient_Personal");
+const { body, validationResult } = require('express-validator');
 
 function generateRandomPassword() {
     return crypto.randomBytes(8).toString('hex'); // Generates a 16-character password
@@ -19,6 +20,58 @@ function generateRandomPassword() {
     // Ensure the value is a 10-digit number
     return decimalValue % 9000000000 + 1000000000; // Ensures the number is between 1000000000 and 9999999999
 }
+
+const validatePatientUpdate = [
+    body('bloodType')
+      .optional()
+      .isIn(['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'])
+      .withMessage('Invalid blood type'),
+    
+    body('allergies.*.substance')
+      .optional()
+      .trim()
+      .notEmpty()
+      .withMessage('Allergy substance is required'),
+    
+    body('chronicConditions.*.condition')
+      .optional()
+      .trim()
+      .notEmpty()
+      .withMessage('Chronic condition name is required'),
+    
+    body('chronicConditions.*.dateDiagnosed')
+      .optional()
+      .isISO8601()
+      .withMessage('Invalid date format for diagnosis date'),
+    
+    body('familyMedicalHistory.*.relation')
+      .optional()
+      .trim()
+      .notEmpty()
+      .withMessage('Family relation is required'),
+    
+    body('immunizationRecords.*.vaccine')
+      .optional()
+      .trim()
+      .notEmpty()
+      .withMessage('Vaccine name is required'),
+    
+    body('immunizationRecords.*.dateReceived')
+      .optional()
+      .isISO8601()
+      .withMessage('Invalid date format for vaccination date'),
+    
+    body('healthInsuranceDetails.policyNumber')
+      .optional()
+      .trim()
+      .notEmpty()
+      .withMessage('Policy number is required'),
+    
+    body('healthInsuranceDetails.coPayAmount')
+      .optional()
+      .isNumeric()
+      .withMessage('Co-pay amount must be a number')
+  ];
 
 // Create a new patient
 router.post('/patient/new', async (req, res) => {
@@ -150,29 +203,101 @@ router.get('/patient/staticData/:patient_id', async (req, res) => {
       return res.status(500).json({ error: "Internal Server Error" });
     }
   });
-  router.put("/patient/:patient_id", async (req, res) => {
-    try {
-      const { patient_id } = req.params;
-      const updatedData = req.body;
+  router.put("/patient/:patient_id", 
+    validatePatientUpdate,
+    async (req, res) => {
+      try {
+        // Validate request parameters
+        if (!mongoose.isValidObjectId(req.params.patient_id)) {
+          return res.status(400).json({ 
+            message: "Invalid patient ID format" 
+          });
+        }
   
-      // Check if the patient exists by patient_id
-      const patient = await Patient.findOne({ patient_id });
-      if (!patient) {
-        return res.status(404).json({ message: "Patient not found" });
+        // Check for validation errors
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+          return res.status(400).json({ 
+            message: "Validation error", 
+            errors: errors.array() 
+          });
+        }
+  
+        const { patient_id } = req.params;
+        const updatedData = req.body;
+  
+        // Remove any undefined or null values from updatedData
+        Object.keys(updatedData).forEach(key => {
+          if (updatedData[key] === undefined || updatedData[key] === null) {
+            delete updatedData[key];
+          }
+        });
+  
+        // Check if the patient exists
+        const patient = await Patient.findOne({ patient_id });
+        if (!patient) {
+          return res.status(404).json({ 
+            message: "Patient not found" 
+          });
+        }
+  
+        // Prevent updating of immutable fields if they exist in updatedData
+        delete updatedData.patient_id;
+        delete updatedData._id;
+        delete updatedData.__v;
+  
+        // Update the patient record
+        const updatedPatient = await Patient.findOneAndUpdate(
+          { patient_id },
+          { 
+            $set: updatedData,
+            $currentDate: { lastModified: true }
+          },
+          { 
+            new: true, 
+            runValidators: true,
+            context: 'query'
+          }
+        );
+  
+        // Handle case where update fails
+        if (!updatedPatient) {
+          return res.status(400).json({ 
+            message: "Update failed" 
+          });
+        }
+  
+        // Log the update for audit purposes
+        console.log(`Patient ${patient_id} updated by ${req.user?.id || 'unknown'} at ${new Date().toISOString()}`);
+  
+        res.status(200).json({ 
+          message: "Patient record updated successfully", 
+          patient: updatedPatient 
+        });
+  
+      } catch (error) {
+        console.error("Error updating patient:", error);
+        
+        // Handle specific MongoDB errors
+        if (error.name === 'ValidationError') {
+          return res.status(400).json({ 
+            message: "Validation error", 
+            errors: Object.values(error.errors).map(err => err.message)
+          });
+        }
+        
+        if (error.code === 11000) {
+          return res.status(409).json({ 
+            message: "Duplicate key error", 
+            field: Object.keys(error.keyPattern)[0]
+          });
+        }
+  
+        res.status(500).json({ 
+          message: "Internal server error",
+          error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
       }
-  
-      // Update the patient record with the new data
-      const updatedPatient = await Patient.findOneAndUpdate(
-        { patient_id },
-        updatedData,
-        { new: true, runValidators: true }
-      );
-  
-      res.status(200).json({ message: "Patient record updated", patient: updatedPatient });
-    } catch (error) {
-      console.error("Error updating patient:", error);
-      res.status(500).json({ message: "Server error", error: error.message });
-    }
   });
 
 router.get('/patient/:patient_id', async (req, res) => {

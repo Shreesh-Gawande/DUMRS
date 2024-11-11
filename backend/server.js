@@ -10,7 +10,7 @@ const authorizedRoutes=require("./routes/authorizedRoutes")
 const patientRoutes=require('./routes/patientRoutes')
 
 const PORT = process.env.PORT || 4000;
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000" || "http://localhost:3000";
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3001" || "http://localhost:3000";
 const app = express();
 
 // Middlewares
