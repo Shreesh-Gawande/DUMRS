@@ -37,6 +37,15 @@ const PatientSchema = new mongoose.Schema({
       boosterShot: { type: Boolean, default: false },
     },
   ],
+  surgeries: [
+    { 
+      procedure: { type: String },
+      date: { type: String },
+      hospital: { type: String },
+      surgeon: { type: String },
+      notes: { type: String }
+    }
+  ],
   healthInsuranceDetails: {
     provider: { type: String },
     coverage: { type: String },

@@ -175,6 +175,7 @@ router.get('/patient/:patient_id', async (req, res) => {
                 immunizationRecords: patient.immunizationRecords,
                 healthInsuranceDetails: patient.healthInsuranceDetails,
                 medicalRecords: patient.medicalRecords,
+                surgeries:patient.surgeries
             }
         });
 
