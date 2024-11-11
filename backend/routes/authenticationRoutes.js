@@ -48,6 +48,9 @@ router.post("/signup", async (req, res) => {
 // Authority Login
 router.post("/authority", async (req, res) => {
     const { authority_id, authority_password } = req.body;
+    if (!authority_id || !authority_password) {
+        return res.status(400).json({ message: "Id and password are required" });
+    }
     try {
         const authority = await Authority.findOne({ authority_id });
         if (!authority) return res.status(404).json({ message: "Authority not found" });
@@ -72,6 +75,10 @@ router.post("/authority", async (req, res) => {
 // Hospital Login
 router.post("/hospital", async (req, res) => {
     const { hospital_id, hospital_password } = req.body;
+    if (!hospital_id || !hospital_password) {
+        return res.status(400).json({ message: "Id and password are required" });
+    }
+    
     try {
         const hospital = await Hospital.findOne({ hospital_id });
         if (!hospital) return res.status(404).json({ message: "Hospital not found" });
@@ -95,7 +102,9 @@ router.post("/hospital", async (req, res) => {
 // Patient Login
 router.post("/patient", async (req, res) => {
     const { patient_id, patientPassword } = req.body;
-
+    if (!patient_id || !patientPassword) {
+        return res.status(400).json({ message: "Id and password are required" });
+    }
     try {
         // Find the patient in the Patient_Personal model
         const patient = await Patient_Personal.findOne({ patient_id });
