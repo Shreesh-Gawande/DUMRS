@@ -8,7 +8,15 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { id } = useParams();
-console.log(id);
+  function formatToDDMMYYYY(isoDate) {
+    const date = new Date(isoDate);
+    
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}-${month}-${year}`;
+}
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -71,7 +79,7 @@ console.log(id);
             <div className="flex items-start gap-6">
               <div className="relative">
                 <img
-                  src="/api/placeholder/128/128"
+                  src="/images/misc/patient.svg"
                   alt="Profile"
                   className="w-24 h-24 rounded-2xl object-cover border-4 border-purple-100"
                 />
@@ -86,16 +94,12 @@ console.log(id);
                 <p className="text-gray-500 mt-1">{profileData.email}</p>
               </div>
             </div>
-            <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all duration-200 flex items-center gap-2">
-              <Edit2 className="w-4 h-4" />
-              <span>Edit Profile</span>
-            </button>
           </div>
 
           {/* Profile Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
             {[
-              { label: 'Date of Birth', value: profileData.dateOfBirth },
+              { label: 'Date of Birth', value: formatToDDMMYYYY(profileData.dateOfBirth) },
               { label: 'Age', value: profileData.age },
               { label: 'Gender', value: profileData.gender },
               { label: 'Phone Number', value: profileData.phoneNumber },

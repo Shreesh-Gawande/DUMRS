@@ -9,20 +9,77 @@ import Profile from "./pages/profile";
 import AdminDashboard from "./pages/admindashboard";
 import HospitalRegistrationForm from "./pages/addhospital";
 import HospitalDashboard from "./pages/hosptialdashboard";
+import { PrivateRoute } from "./components/private";
 
 function App() {
   return (
     <BrowserRouter>
         <Routes>
           <Route path="/" element={<DoctorLogin/>}/>
-          <Route path="/dashboard/:patient_id" element={<DashboardPage/>}/>
-          <Route path="/medical-info/:patient_id" element={<MedicalProfile/>}/>
-          <Route path="/add-record/:patientId" element={<AddMedicalRecord/>}/>
-          <Route path="/add-patient" element={<PatientRegistrationForm/>}/>
-          <Route path="/add-hospital" element={<HospitalRegistrationForm/>}/>
-          <Route path="/profile/:id" element={<Profile/>}/>
-          <Route path="/admin/dashboard" element={<AdminDashboard/>}/>
-          <Route path="/doctor/dashboard" element={<HospitalDashboard/>}/>
+          <Route
+            path="/dashboard/:patient_id"
+            element={
+              <PrivateRoute>
+                <DashboardPage/>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/medical-info/:patient_id"
+            element={
+              <PrivateRoute>
+                <MedicalProfile/>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/add-record/:patientId"
+            element={
+              <PrivateRoute>
+                <AddMedicalRecord/>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/add-patient"
+            element={
+              <PrivateRoute>
+                <PatientRegistrationForm/>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/add-hospital"
+            element={
+              <PrivateRoute>
+                <HospitalRegistrationForm/>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/profile/:id"
+            element={
+              <PrivateRoute>
+                <Profile/>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <PrivateRoute>
+                <AdminDashboard/>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/doctor/dashboard"
+            element={
+              <PrivateRoute>
+                <HospitalDashboard/>
+              </PrivateRoute>
+            }
+          />
        </Routes>
     </BrowserRouter>
   );

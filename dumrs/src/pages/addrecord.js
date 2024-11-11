@@ -355,7 +355,7 @@ const AddMedicalRecord = () => {
 
   return (
     <div className='flex'>
-      <Sidebar/>
+      <Sidebar id={patientId}/>
       <div className="w-[100%] p-6 space-y-6">
       <LoadingOverlay 
           isVisible={isSubmitting} 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect,useContext } from 'react';
 import { 
   Droplets, 
   AlertCircle, 
@@ -15,13 +15,14 @@ import {
 import Sidebar from '../components/sidebar';
 import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { RoleContext } from '../components/private';
 const userRole=localStorage.getItem('userRole')
 const MedicalProfile = () => {
   const { patient_id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const userRole = localStorage.getItem('userRole');
+  const userRole = useContext(RoleContext)
 
   useEffect(() => {
     const fetchPatientData = async () => {
