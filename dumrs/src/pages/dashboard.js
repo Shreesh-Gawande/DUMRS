@@ -1,165 +1,197 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Activity, Droplets, Scale, Ruler, AlertCircle } from 'lucide-react';
 import { Graph } from '../components/graph';
-import Sidebar from '../components/sidebar'
+import Sidebar from '../components/sidebar';
+import { useParams,useNavigate } from 'react-router-dom';
 
 export const DashboardPage = () => {
-  const allergies = [
-    {
-      substance: "Penicillin",
-      reaction: "Severe rash and difficulty breathing"
-    },
-    {
-      substance: "Peanuts",
-      reaction: "Anaphylaxis"
-    },
-    {
-      substance: "Latex",
-      reaction: "Skin irritation and hives"
-    },
-    {
-      substance: "Shellfish",
-      reaction: "Severe swelling and nausea"
+  const { patient_id } = useParams();
+  const [patientData, setPatientData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate=useNavigate()
+  const handleLogout=()=>{
+    localStorage.clear('token')
+    localStorage.clear('userRole')
+    navigate('/')
+    console.log('Logging out...');
+  }
+
+  useEffect(() => {
+    const fetchPatientData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(`http://localhost:4000/users/patient/staticData/${patient_id}`);
+        if (!response.ok) {
+          throw new Error(response.status === 404 ? 'Patient not found' : 'Failed to fetch patient data');
+        }
+        const data = await response.json();
+        setPatientData(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (patient_id) {
+      fetchPatientData();
     }
-  ];
+  }, [patient_id]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
+        <div className="text-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
+          <p className="mt-4 text-indigo-600">Loading patient data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50">
+        <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-lg">
+          <div className="mb-4 flex items-center text-red-600">
+            <AlertCircle className="mr-2" size={24} />
+            <h2 className="text-lg font-semibold">Error</h2>
+          </div>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!patientData) {
+    return null;
+  }
 
   return (
     <div className='flex'>
-        <Sidebar/>
-        <div className="p-4 md:p-6 flex flex-col gap-4 md:gap-6 bg-gradient-to-br from-indigo-50 to-purple-50 min-h-screen">
-      {/* Header Section */}
-      <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-lg border border-indigo-100">
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Dashboard
-          </h1>
-          <p className="text-sm text-gray-500">Welcome back, John Doe</p>
-        </div>
-        <button className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg">
-          Log Out
-        </button>
-      </div>
-
-      {/* Main Dashboard Content */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        {/* Main Content Area */}
-        <main className="w-full lg:w-[74%] space-y-4">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white p-4 md:p-6 rounded-xl shadow-lg border border-indigo-100">
-            <StatItem 
-              icon={<Activity className="text-indigo-500" />}
-              text="Age" 
-              value="28" 
-              trend="+1" 
-            />
-            <StatItem 
-              icon={<Droplets className="text-purple-500" />}
-              text="Blood Type" 
-              value="B+" 
-            />
-            <StatItem 
-              icon={<Scale className="text-indigo-500" />}
-              text="Weight(kg)" 
-              value="68" 
-              trend="-2.3" 
-            />
-            <StatItem 
-              icon={<Ruler className="text-purple-500" />}
-              text="Height(cm)" 
-              value="170" 
-            />
+      <Sidebar id={patient_id}/>
+      <div className="p-4 md:p-6 flex flex-col gap-4 md:gap-6 bg-gradient-to-br from-indigo-50 to-purple-50 min-h-screen">
+        {/* Header Section */}
+        <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-lg border border-indigo-100">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Patient Dashboard
+            </h1>
+            <p className="text-sm text-gray-500">Patient ID: {patient_id}</p>
           </div>
+          <button onClick={handleLogout} className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg">
+            Log Out
+          </button>
+        </div>
 
-          <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-indigo-100">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="text-purple-500" size={24} />
-                <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Allergies
-                </h2>
+        {/* Main Dashboard Content */}
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Main Content Area */}
+          <main className="w-full lg:w-[74%] space-y-4">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white p-4 md:p-6 rounded-xl shadow-lg border border-indigo-100">
+              <StatItem 
+                icon={<Activity className="text-indigo-500" />}
+                text="Age" 
+                value={patientData.age} 
+              />
+              <StatItem 
+                icon={<Droplets className="text-purple-500" />}
+                text="Blood Type" 
+                value={patientData.bloodType} 
+              />
+              <StatItem 
+                icon={<Scale className="text-indigo-500" />}
+                text="Weight(kg)" 
+                value={patientData.weight} 
+              />
+              <StatItem 
+                icon={<Ruler className="text-purple-500" />}
+                text="Height(cm)" 
+                value={patientData.height} 
+              />
+            </div>
+
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-indigo-100">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="text-purple-500" size={24} />
+                  <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    Allergies
+                  </h2>
+                </div>
+                <span className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-sm font-medium border border-purple-100">
+                  {patientData.allergies.length} Known Allergies
+                </span>
               </div>
-              <span className="px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-sm font-medium border border-purple-100">
-                {allergies.length} Known Allergies
-              </span>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {patientData.allergies.map((allergy, index) => (
+                  <AllergyCard 
+                    key={index}
+                    substance={allergy.substance}
+                    reaction={allergy.reaction}
+                  />
+                ))}
+              </div>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {allergies.map((allergy, index) => (
-                <AllergyCard 
-                  key={index}
-                  substance={allergy.substance}
-                  reaction={allergy.reaction}
-                />
-              ))}
+            {/* Graph Component */}
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-indigo-100">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Health Metrics
+                </h2>
+                <select className="w-full sm:w-auto px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300">
+                  <option>Last 7 days</option>
+                  <option>Last 30 days</option>
+                  <option>Last 90 days</option>
+                </select>
+              </div>
+              <Graph />
             </div>
-          </div>
-          
-          {/* Graph Component */}
-          <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-indigo-100">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                Health Metrics
-              </h2>
-              <select className="w-full sm:w-auto px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300">
-                <option>Last 7 days</option>
-                <option>Last 30 days</option>
-                <option>Last 90 days</option>
-              </select>
-            </div>
-            <Graph />
-          </div>
-        </main>
+          </main>
 
-        {/* Sidebar */}
-        <aside className="w-full lg:w-[26%] bg-white p-4 md:p-5 rounded-xl shadow-lg border border-indigo-100 h-fit">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Recent Records
-            </h2>
-            <button className="text-indigo-600 text-sm hover:text-purple-600 transition-colors duration-200">
-              View All
-            </button>
-          </div>
-          <div className="flex flex-col gap-4">
-            <RecordItem 
-              title="Annual Checkup"
-              date="2024-09-15"
-              type="checkup"
-              description="Routine annual checkup, all vitals were normal and no immediate health concerns were noted."
-            />
-            <RecordItem 
-              title="Blood Test Results"
-              date="2024-09-25"
-              type="lab"
-              description="Blood test for cholesterol levels showed slightly elevated LDL."
-            />
-            <RecordItem 
-              title="Appendectomy"
-              date="2024-08-10"
-              type="surgery"
-              description="Appendectomy performed due to acute appendicitis."
-            />
-            <RecordItem 
-              title="CBC Test"
-              date="2024-07-05"
-              type="lab"
-              description="Complete blood count test conducted. Results were normal."
-            />
-            <RecordItem 
-              title="Cardiology Consultation"
-              date="2024-10-01"
-              type="consultation"
-              description="Consultation with cardiologist due to occasional chest discomfort."
-            />
-          </div>
-        </aside>
+          {/* Recent Records Section - Static */}
+          <aside className="w-full lg:w-[26%] bg-white p-4 md:p-5 rounded-xl shadow-lg border border-indigo-100 h-fit">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Recent Records
+              </h2>
+              <button className="text-indigo-600 text-sm hover:text-purple-600 transition-colors duration-200">
+                View All
+              </button>
+            </div>
+            <div className="flex flex-col gap-4">
+              <RecordItem 
+                title="Annual Checkup"
+                date="2024-09-15"
+                type="checkup"
+                description="Routine annual checkup, all vitals were normal and no immediate health concerns were noted."
+              />
+              <RecordItem 
+                title="Blood Test Results"
+                date="2024-09-25"
+                type="lab"
+                description="Blood test for cholesterol levels showed slightly elevated LDL."
+              />
+              <RecordItem 
+                title="Appendectomy"
+                date="2024-08-10"
+                type="surgery"
+                description="Appendectomy performed due to acute appendicitis."
+              />
+            </div>
+          </aside>
+        </div>
       </div>
-    </div>
     </div>
   );
 };
 
-const StatItem = ({ icon, text, value, trend }) => (
+const StatItem = ({ icon, text, value }) => (
   <div className="flex gap-4 items-center p-3 rounded-xl hover:bg-indigo-50 transition-all duration-200 border border-transparent hover:border-indigo-100">
     <div className="h-12 w-12 flex justify-center items-center bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl shadow-sm">
       {icon}
@@ -168,15 +200,6 @@ const StatItem = ({ icon, text, value, trend }) => (
       <p className="text-sm text-gray-500">{text}</p>
       <div className="flex items-center gap-2">
         <h3 className="text-lg font-semibold text-gray-800">{value}</h3>
-        {trend && (
-          <span className={`text-xs px-2 py-1 rounded-full ${
-            parseFloat(trend) > 0 
-              ? 'text-green-600 bg-green-50 border border-green-100' 
-              : 'text-red-600 bg-red-50 border border-red-100'
-          }`}>
-            {trend}
-          </span>
-        )}
       </div>
     </div>
   </div>
@@ -227,4 +250,3 @@ const RecordItem = ({ title, date, type, description }) => {
     </div>
   );
 };
-

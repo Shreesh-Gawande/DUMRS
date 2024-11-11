@@ -37,8 +37,8 @@ export function DoctorLogin() {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          doctor_id: id,
-          doctor_password: password
+          hospital_id: id,
+          hospital_password: password
         })
       });
       
@@ -68,7 +68,7 @@ export function DoctorLogin() {
         },
         body: JSON.stringify({
           patient_id: id,
-          patient_password: password
+          patientPassword: password
         })
       });
       
@@ -77,7 +77,7 @@ export function DoctorLogin() {
       if (res.ok) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userRole', 'patient');
-        navigate('/dashboard');
+        navigate(`/dashboard/${id}`);
       } else {
         setError(data.message || 'Login failed. Please check your credentials.');
       }
