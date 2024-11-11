@@ -17,7 +17,7 @@ const app = express();
 app.use(
   cors({
     origin: CLIENT_URL,
-    credentials: true,  // Allows cookies to be sent cross-origin if needed
+   
   })
 );
 
