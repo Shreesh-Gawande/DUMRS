@@ -1,6 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Authority = require("../models/Authority_Personal");
+const Hospital = require("../models/Hospital");
+const Patient_Personal = require("../models/Patient_Personal");
 const SECRET_KEY = process.env.SECRET_KEY||"Shreesh";
 
 
@@ -96,6 +98,20 @@ const loginHospital=async (req,res)=>{
     }
 }
 
+const logout = async (req, res) => {
+    try {
+        // Clear the token cookie
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: false  // Keep this consistent with your login settings
+        });
+
+        return res.status(200).json({ message: "Logout successful" });
+    } catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+
 const loginPatient= async(req,res)=>{
     const { patient_id, patientPassword } = req.body;
     if (!patient_id || !patientPassword) {
@@ -138,4 +154,4 @@ const loginPatient= async(req,res)=>{
 module.exports = { loginAuthority,
     loginHospital,
     loginPatient,
-    signinAuthority,getUser };
+    signinAuthority,getUser,logout };

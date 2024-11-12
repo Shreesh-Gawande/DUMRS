@@ -62,7 +62,7 @@ export const DashboardPage = () => {
         const records = await response.json();
         setRecentRecords(records);
       } catch (err) {
-        setError(err.message);
+        
       }
     };
 

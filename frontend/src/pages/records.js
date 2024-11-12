@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCalendar,
@@ -91,12 +91,16 @@ const PatientRecords = () => {
 
   if (error) {
     return (
-      <div className="flex-1 min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className='flex'>
+        <Sidebar id={id}/>
+        <div className="flex-1 min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center text-red-600">
-          <p className="text-lg font-medium">Error loading records</p>
-          <p className="text-sm">{error}</p>
+          <p className="text-lg font-medium">No records found</p>
+          <Link to={`/dashboard/${id}`} className="text-purple-600 hover:underline">Go back to dashboard</Link>
         </div>
       </div>
+      </div>
+      
     );
   }
 
