@@ -1,16 +1,17 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Link,useNavigate } from 'react-router-dom';
 import { Building2, UserPlus, LogOut } from 'lucide-react';
 import LogoutComponent from '../components/logout';
+import { RoleContext } from '../components/private';
 
 const AdminDashboard = () => {
     const navigate=useNavigate()
-  const handleLogout = () => {
-    localStorage.clear('token')
-    localStorage.clear('userRole')
-    navigate('/')
-    console.log('Logging out...');
-  };
+    const role=useContext(RoleContext)
+    useEffect(()=>{
+      if(role!=='authority'){
+        navigate('/')
+      }
+    },[])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-blue-50">
@@ -25,7 +26,7 @@ const AdminDashboard = () => {
           {/* Header */}
           <div className="text-center space-y-3 mb-12">
             <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600">
-              Welcome to MedAdmin
+              Welcome to MediSync
             </h1>
             <p className="text-gray-500">
               Manage your healthcare facilities and patients efficiently

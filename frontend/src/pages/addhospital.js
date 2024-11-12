@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { AlertCircle, CheckCircle2, Circle } from 'lucide-react';
+import { RoleContext } from '../components/private';
+import { useNavigate } from 'react-router-dom';
 
 const HospitalRegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -13,13 +15,13 @@ const HospitalRegistrationForm = () => {
     phoneNumber: '',
     email: ''
   });
-
+  const role=useContext(RoleContext)
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [progress, setProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
-
+  const navigate=useNavigate()
   // Validation rules
   const validateField = (name, value) => {
     switch (name) {
@@ -34,7 +36,7 @@ const HospitalRegistrationForm = () => {
           ? 'Please enter a valid phone number' 
           : '';
       case 'address.zipCode':
-        return !/^\d{5}(-\d{4})?$/.test(value) 
+        return !/^\d{6}(-\d{5})?$/.test(value) 
           ? 'Please enter a valid ZIP code' 
           : '';
       default:
@@ -44,6 +46,10 @@ const HospitalRegistrationForm = () => {
 
   // Calculate form progress
   useEffect(() => {
+    if(role!=='authority'){
+      navigate('/')
+    }
+
     const requiredFields = [
       'name',
       'email',
@@ -127,11 +133,12 @@ const HospitalRegistrationForm = () => {
       setSubmitStatus({ type: '', message: '' });
 
       try {
-        const response = await fetch('http://localhost:4000/users/hospital/new', {
+        const response = await fetch(process.env.api+'/users/hospital/new', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials:'include',
           body: JSON.stringify(formData)
         });
 

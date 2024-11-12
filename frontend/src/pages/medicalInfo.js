@@ -22,14 +22,17 @@ const MedicalProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const userRole = useContext(RoleContext)
-
+  
   useEffect(() => {
     const fetchPatientData = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        const response = await fetch(`http://localhost:4000/users/patient/${patient_id}`);
+        const response = await fetch(`${process.env.api}/users/patient/${patient_id}`,{
+          method:'GET',
+          credentials:'include'
+        });
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -50,7 +53,7 @@ const MedicalProfile = () => {
 
   const handleAddEntry = async (section, newEntry) => {
     try {
-      const response = await fetch(`http://localhost:4000/users/patient/${patient_id}`, {
+      const response = await fetch(`${process.env.api}/users/patient/${patient_id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -59,6 +62,7 @@ const MedicalProfile = () => {
           section,
           newEntry
         }),
+        credentials:'include'
       });
   
       const result = await response.json();
@@ -71,38 +75,18 @@ const MedicalProfile = () => {
         ...prev,
         [section]: [...prev[section], result.data.newEntry]
       }));
+
+      window.location.reload()
      
   
     } catch (error) {
       console.error('Error adding entry:', error);
+      setError('Error adding entry')
     
     }
   };
 
-  const updateInsurance = async (newDetails) => {
-    try {
-      const response = await fetch(`/api/patient/${patient_id}/insurance`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newDetails),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      setData(prev => ({
-        ...prev,
-        healthInsuranceDetails: newDetails
-      }));
-    } catch (error) {
-      console.error('Error updating insurance:', error);
-      // You might want to show an error message to the user here
-    }
-  };
-
+  
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50">
@@ -382,7 +366,7 @@ const MedicalProfile = () => {
                     { name: 'policyNumber', label: 'Policy Number', type: 'text' },
                     { name: 'coPayAmount', label: 'Co-Pay Amount', type: 'number' }
                   ]}
-                  onSubmit={updateInsurance}
+                  onSubmit={(values)=>{handleAddEntry('healthInsuranceDetails',values)}}
                 />
               }
             >

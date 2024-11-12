@@ -138,23 +138,23 @@ router.get('/records/recent/:id', async (req, res) => {
 router.get('/records/bloodPressure/:patientId', async (req, res) => {
   try {
     const { patientId } = req.params;
-    console.log(patientId);
     
     // Find all records for the given patient ID
-    const records = await Record.find({ patient_id: patientId });
-    console.log(records)
+    const records = await Record.find({ patient_id: patientId }).sort({ visitDate: 1 });
+    
     // Extract the blood pressure values and their corresponding timestamps
     const bloodPressureData = records.map(record => ({
-      x: new Date(record.visitDate).getFullYear(), // Use the year as the x-axis label
-      y: parseFloat(record.vitalSigns.bloodPressure), // Convert blood pressure to a number
+      x: record.visitDate, // Send the full date
+      y: parseFloat(record.vitalSigns.bloodPressure),
     }));
-    console.log(bloodPressureData)
-    res.json(bloodPressureData)
+    
+    res.json(bloodPressureData);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error fetching blood pressure data' });
   }
 });
+
 
 // Add or update allergies
 router.patch("/:id/allergies", async (req, res) => {
