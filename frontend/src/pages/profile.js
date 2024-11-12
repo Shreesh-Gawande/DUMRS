@@ -26,7 +26,10 @@ const Profile = () => {
     }
     const fetchProfileData = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/patient/${id}/personalData`);
+        const response = await fetch(`${process.env.api}/patient/${id}/personalData`,{
+          method:'GET',
+          credentials:'include'
+        });
         if (!response.ok) throw new Error('Failed to fetch profile data');
         const data = await response.json();
         setProfileData(data[0]);

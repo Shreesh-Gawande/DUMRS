@@ -29,7 +29,10 @@ const MedicalProfile = () => {
         setLoading(true);
         setError(null);
         
-        const response = await fetch(`http://localhost:4000/users/patient/${patient_id}`);
+        const response = await fetch(`${process.env.api}/users/patient/${patient_id}`,{
+          method:'GET',
+          credentials:'include'
+        });
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -50,7 +53,7 @@ const MedicalProfile = () => {
 
   const handleAddEntry = async (section, newEntry) => {
     try {
-      const response = await fetch(`http://localhost:4000/users/patient/${patient_id}`, {
+      const response = await fetch(`${process.env.api}/users/patient/${patient_id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -59,6 +62,7 @@ const MedicalProfile = () => {
           section,
           newEntry
         }),
+        credentials:'include'
       });
   
       const result = await response.json();
@@ -71,10 +75,13 @@ const MedicalProfile = () => {
         ...prev,
         [section]: [...prev[section], result.data.newEntry]
       }));
+
+      window.location.reload()
      
   
     } catch (error) {
       console.error('Error adding entry:', error);
+      setError('Error adding entry')
     
     }
   };

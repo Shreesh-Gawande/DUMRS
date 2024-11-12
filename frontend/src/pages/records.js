@@ -19,7 +19,7 @@ import Sidebar from '../components/sidebar'
 import { RoleContext } from '../components/private';
 
 
-const baseUrl = 'http://localhost:4000';
+const baseUrl = process.env.api;
 
 const PatientRecords = () => {
   const { id } = useParams();
@@ -32,7 +32,10 @@ const PatientRecords = () => {
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${baseUrl}/patient/${id}/records`);
+      const response = await fetch(`${baseUrl}/patient/${id}/records`,{
+        method:'GET',
+        credentials:'include'
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch records');
       }
@@ -46,7 +49,10 @@ const PatientRecords = () => {
   };
 
   const handleOpenFile = async (key) => {
-    const response = await fetch(`${baseUrl}/patient/${id}/${key}`);
+    const response = await fetch(`${baseUrl}/patient/${id}/${key}`,{
+      method:'GET',
+      credentials:'include'
+    });
     if (!response.ok) {
       throw new Error('Failed to fetch records');
     }

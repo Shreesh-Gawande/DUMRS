@@ -31,7 +31,7 @@ export function DoctorLogin() {
   const handleDoctorLogin = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:4000/auth/doctor', {
+      const res = await fetch(process.env.api+'/auth/hospital', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -39,14 +39,14 @@ export function DoctorLogin() {
         body: JSON.stringify({
           hospital_id: id,
           hospital_password: password
-        })
+        }),
+        credentials:'include'
       });
       
       const data = await res.json();
       
       if (res.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userRole', 'doctor');
+        
         navigate('/doctor/dashboard');
       } else {
         setError(data.message || 'Login failed. Please check your credentials.');
@@ -61,7 +61,7 @@ export function DoctorLogin() {
   const handlePatientLogin = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:4000/auth/patient', {
+      const res = await fetch(process.env.api+'/auth/patient', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -69,14 +69,14 @@ export function DoctorLogin() {
         body: JSON.stringify({
           patient_id: id,
           patientPassword: password
-        })
+        }),
+        credentials:'include'
       });
       
       const data = await res.json();
       
       if (res.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userRole', 'patient');
+        
         navigate(`/dashboard/${id}`);
       } else {
         setError(data.message || 'Login failed. Please check your credentials.');
@@ -91,7 +91,7 @@ export function DoctorLogin() {
   const handleAdminLogin = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch('http://localhost:4000/auth/authority', {
+      const res = await fetch(process.env.api+'/auth/authority', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -106,8 +106,7 @@ export function DoctorLogin() {
       const data = await res.json();
       
       if (res.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userRole', 'admin');
+        
         navigate('/admin/dashboard');
       } else {
         setError(data.message || 'Login failed. Please check your credentials.');

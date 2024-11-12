@@ -133,11 +133,12 @@ const HospitalRegistrationForm = () => {
       setSubmitStatus({ type: '', message: '' });
 
       try {
-        const response = await fetch('http://localhost:4000/users/hospital/new', {
+        const response = await fetch(process.env.api+'/users/hospital/new', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials:'include',
           body: JSON.stringify(formData)
         });
 

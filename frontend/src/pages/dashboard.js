@@ -35,7 +35,10 @@ export const DashboardPage = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`http://localhost:4000/users/patient/staticData/${patient_id}`);
+        const response = await fetch(`${process.env.api}/users/patient/staticData/${patient_id}`,{
+          method:'GET',
+          credentials:'include'
+        });
         if (!response.ok) {
           throw new Error(response.status === 404 ? 'Patient not found' : 'Failed to fetch patient data');
         }
@@ -49,7 +52,10 @@ export const DashboardPage = () => {
     };
     const fetchRecentRecords = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/patient/records/recent/${patient_id}`);
+        const response = await fetch(`${process.env.api}/patient/records/recent/${patient_id}`,{
+          method:'GET',
+          credentials:'include'
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch recent records');
         }
@@ -243,7 +249,7 @@ const RecordItem = ({ title, date, type, description }) => {
     const styles = {
       Inpatient: 'bg-green-50 text-green-600 border-green-100',
       Outpatient: 'bg-indigo-50 text-indigo-600 border-indigo-100',
-      surgery: 'bg-red-50 text-red-600 border-red-100',
+      Emergency: 'bg-red-50 text-red-600 border-red-100',
       consultation: 'bg-purple-50 text-purple-600 border-purple-100'
     };
     return styles[type] || 'bg-gray-50 text-gray-600 border-gray-100';
