@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
@@ -27,7 +26,6 @@ ChartJS.register(
 
 export function Graph(props) {
   const [bloodPressureData, setBloodPressureData] = useState([]);
-
   const { id } = props;
 
   useEffect(() => {
@@ -141,10 +139,8 @@ export function Graph(props) {
 
   return (
     <div style={{ width: '100%' }}>
-
       <h2>Blood Pressure History</h2>
       <Line options={options} data={data} />
     </div>
   );
 }
-

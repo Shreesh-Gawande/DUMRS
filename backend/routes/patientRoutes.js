@@ -14,7 +14,6 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 
-
 // Get Patient Personal Data
 router.get('/:id/personalData', async (req, res) => {
   try {

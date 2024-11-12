@@ -10,7 +10,11 @@ export const PrivateRoute = ({  children }) => {
     const [role,setrole]=useState('')
     const getData=async()=>{
     try {
+<<<<<<< HEAD
+      const res=await fetch(process.env.REACT_APP_API+'/auth/user-type',{
+=======
       const res=await fetch(baseUrl+'/auth/user-type',{
+>>>>>>> 0b9ea888fe68efa8b2ae5b18bccabd43f1c81dd5
         method:'GET',
         headers:{
           'Content-Type':'application/json'

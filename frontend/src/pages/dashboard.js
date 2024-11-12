@@ -14,6 +14,7 @@ export const DashboardPage = () => {
   const [recentRecords, setRecentRecords] = useState([]);
   const navigate=useNavigate()
   const role=useContext(RoleContext)
+  const baseUrl = process.env.REACT_APP_API
 
   function formatToDDMMYYYY(isoDate) {
     const date = new Date(isoDate);
