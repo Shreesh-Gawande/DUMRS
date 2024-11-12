@@ -31,7 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));  // Logging requests
 
 // MongoDB Connection
-mongoose.connect("mongodb+srv://ShreeshGawande:Shreesh10@cluster0.o3pndei.mongodb.net/MediSync")
+mongoose.connect(`${process.env.DB_URL}`)
   .then(() => {
     console.log("MongoDB Connected");
   })
