@@ -10,7 +10,7 @@ const LogoutComponent = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:4000/auth/logout', {
+      const response = await fetch(process.env.api+'/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });

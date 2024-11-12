@@ -34,7 +34,7 @@ const HospitalDashboard = () => {
           {/* Welcome Section */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
-              Welcome to MedAdmin
+              Welcome to MediSync
             </h1>
             <p className="text-gray-600">
               Manage your healthcare facilities and patients efficiently

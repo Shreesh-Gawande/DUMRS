@@ -254,9 +254,10 @@ const AddMedicalRecord = () => {
       const formData = formatFormDataForSubmission();
       console.log("request sending:",formData);
       
-      const response = await fetch(`http://localhost:4000/patient/${patientId}/add-record`, {
+      const response = await fetch(`${process.env.api}/patient/${patientId}/add-record`, {
         method: 'POST',
         body: formData,
+        credentials:'include'
       });
       
       if (!response.ok) {

@@ -26,7 +26,7 @@ const AdminDashboard = () => {
           {/* Header */}
           <div className="text-center space-y-3 mb-12">
             <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600">
-              Welcome to MedAdmin
+              Welcome to MediSync
             </h1>
             <p className="text-gray-500">
               Manage your healthcare facilities and patients efficiently

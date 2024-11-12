@@ -9,7 +9,7 @@ export const PrivateRoute = ({  children }) => {
     const [role,setrole]=useState('')
     const getData=async()=>{
     try {
-      const res=await fetch('http://localhost:4000/auth/user-type',{
+      const res=await fetch(process.env.api+'/auth/user-type',{
         method:'GET',
         headers:{
           'Content-Type':'application/json'

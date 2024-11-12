@@ -30,7 +30,10 @@ export function Graph(props) {
   useEffect(() => {
     const fetchBloodPressureData = async () => {
       try {
-        const response = await fetch(`http://localhost:4000/patient/records/bloodPressure/${id}`);
+        const response = await fetch(`${process.env.api}/patient/records/bloodPressure/${id}`,{
+          method:'GET',
+          credentials:'include'
+        });
         const data = await response.json();
         // Format the data for display
         const formattedData = data.map(item => ({
