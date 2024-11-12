@@ -12,7 +12,8 @@ const PatientRegistrationForm = () => {
         dateOfBirth: '',
         gender: '',
         height: '',
-        weight: '',  
+        weight: '',
+        bloodType: '',  
         phoneNumber: '',
         email: '',
         emergencyPhone: '',
@@ -50,7 +51,7 @@ const PatientRegistrationForm = () => {
           ? 'Please enter a valid phone number' 
           : '';
       case 'address.zipCode':
-        return !/^\d{5}(-\d{4})?$/.test(value) 
+        return !/^\d{6}(-\d{5})?$/.test(value) 
           ? 'Please enter a valid ZIP code' 
           : '';
           case 'height':
@@ -61,6 +62,8 @@ const PatientRegistrationForm = () => {
             return !/^\d{1,3}(\.\d{1,2})?$/.test(value) 
               ? 'Please enter a valid weight in kg' 
               : '';
+              case 'bloodType':
+                return value === '' ? 'Blood type is required' : '';        
       default:
         return value.trim() === '' ? `${name.split('.').pop()} is required` : '';
     }
@@ -77,6 +80,7 @@ const PatientRegistrationForm = () => {
         'gender',
         'height',    // new
         'weight',    // new
+        'bloodType',
         'email',
         'phoneNumber',
         'emergencyPhone',
@@ -362,6 +366,42 @@ const PatientRegistrationForm = () => {
       <div className="absolute -bottom-6 left-0 text-red-500 text-xs flex items-center gap-1">
         <AlertCircle className="w-3 h-3" />
         {errors.weight}
+      </div>
+    )}
+  </div>
+</div>
+
+<div>
+  <label className="block text-sm font-medium text-purple-700 mb-1">
+    Blood Type
+  </label>
+  <div className="relative">
+    <select
+      name="bloodType"
+      value={formData.bloodType}
+      onChange={handleInputChange}
+      onBlur={handleBlur}
+      className={`w-full px-4 py-2 rounded-lg border ${
+        errors.bloodType && touched.bloodType
+          ? 'border-red-500 focus:ring-red-500'
+          : 'border-purple-200 focus:ring-purple-500'
+      } focus:border-transparent focus:ring-2`}
+      required
+    >
+      <option value="">Select blood type</option>
+      <option value="A+">A+</option>
+      <option value="A-">A-</option>
+      <option value="B+">B+</option>
+      <option value="B-">B-</option>
+      <option value="AB+">AB+</option>
+      <option value="AB-">AB-</option>
+      <option value="O+">O+</option>
+      <option value="O-">O-</option>
+    </select>
+    {errors.bloodType && touched.bloodType && (
+      <div className="absolute -bottom-6 left-0 text-red-500 text-xs flex items-center gap-1">
+        <AlertCircle className="w-3 h-3" />
+        {errors.bloodType}
       </div>
     )}
   </div>

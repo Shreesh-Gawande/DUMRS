@@ -36,7 +36,7 @@ const HospitalRegistrationForm = () => {
           ? 'Please enter a valid phone number' 
           : '';
       case 'address.zipCode':
-        return !/^\d{5}(-\d{4})?$/.test(value) 
+        return !/^\d{6}(-\d{5})?$/.test(value) 
           ? 'Please enter a valid ZIP code' 
           : '';
       default:
