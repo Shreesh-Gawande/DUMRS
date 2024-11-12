@@ -1,27 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { AlertCircle, CheckCircle2, Circle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { RoleContext } from '../components/private';
+
 
 const PatientRegistrationForm = () => {
-  const [formData, setFormData] = useState({
-    fullName: '',
-    dateOfBirth: '',
-    gender: '',
-    phoneNumber: '',
-    email: '',
-    emergencyPhone: '',
-    address: {
-      street: '',
-      city: '',
-      state: '',
-      zipCode: ''
-    }
-  });
+    const navigate=useNavigate()
+    const role=useContext(RoleContext)
+    const [formData, setFormData] = useState({
+        fullName: '',
+        dateOfBirth: '',
+        gender: '',
+        height: '',
+        weight: '',  
+        phoneNumber: '',
+        email: '',
+        emergencyPhone: '',
+        address: {
+          street: '',
+          city: '',
+          state: '',
+          zipCode: ''
+        }
+      });
 
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [progress, setProgress] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState({ type: '', message: '' });
+
+  const getNestedValue = (obj, path) => {
+    const value = path.split('.').reduce((acc, part) => acc && acc[part], obj);
+    return value === undefined ? '' : value;
+};
 
   // Validation rules
   const validateField = (name, value) => {
@@ -41,6 +53,14 @@ const PatientRegistrationForm = () => {
         return !/^\d{5}(-\d{4})?$/.test(value) 
           ? 'Please enter a valid ZIP code' 
           : '';
+          case 'height':
+            return !/^\d{1,3}$/.test(value) 
+              ? 'Please enter a valid height in cm' 
+              : '';
+          case 'weight':
+            return !/^\d{1,3}(\.\d{1,2})?$/.test(value) 
+              ? 'Please enter a valid weight in kg' 
+              : '';
       default:
         return value.trim() === '' ? `${name.split('.').pop()} is required` : '';
     }
@@ -48,25 +68,27 @@ const PatientRegistrationForm = () => {
 
   // Calculate form progress
   useEffect(() => {
+    if(role!=='authority'){
+      navigate('/')
+    }
     const requiredFields = [
-      'fullName',
-      'dateOfBirth',
-      'gender',
-      'email',
-      'phoneNumber',
-      'emergencyPhone',
-      'address.street',
-      'address.city',
-      'address.state',
-      'address.zipCode'
-    ];
+        'fullName',
+        'dateOfBirth',
+        'gender',
+        'height',    // new
+        'weight',    // new
+        'email',
+        'phoneNumber',
+        'emergencyPhone',
+        'address.street',
+        'address.city',
+        'address.state',
+        'address.zipCode'
+      ];
 
-    const completedFields = requiredFields.filter(field => {
-      if (field.includes('.')) {
-        const [parent, child] = field.split('.');
-        return formData[parent][child].trim() !== '' && !errors[field];
-      }
-      return formData[field].trim() !== '' && !errors[field];
+      const completedFields = requiredFields.filter(field => {
+        const value = getNestedValue(formData, field);
+        return value.toString().trim() !== '' && !errors[field];
     });
 
     setProgress((completedFields.length / requiredFields.length) * 100);
@@ -199,18 +221,7 @@ const PatientRegistrationForm = () => {
               </span>
             </div>
           </div>
-          {submitStatus.message && (
-            <div
-              role="alert"
-              className={`mb-4 p-4 rounded-lg ${
-                submitStatus.type === 'success' 
-                  ? 'bg-green-100 text-green-700' 
-                  : 'bg-red-100 text-red-700'
-              }`}
-            >
-              {submitStatus.message}
-            </div>
-          )}
+          
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Personal Information Section */}
@@ -301,6 +312,59 @@ const PatientRegistrationForm = () => {
                     )}
                   </div>
                 </div>
+                <div>
+  <label className="block text-sm font-medium text-purple-700 mb-1">
+    Height (cm)
+  </label>
+  <div className="relative">
+    <input
+      type="number"
+      name="height"
+      value={formData.height}
+      onChange={handleInputChange}
+      onBlur={handleBlur}
+      className={`w-full px-4 py-2 rounded-lg border ${
+        errors.height && touched.height
+          ? 'border-red-500 focus:ring-red-500'
+          : 'border-purple-200 focus:ring-purple-500'
+      } focus:border-transparent focus:ring-2`}
+      required
+    />
+    {errors.height && touched.height && (
+      <div className="absolute -bottom-6 left-0 text-red-500 text-xs flex items-center gap-1">
+        <AlertCircle className="w-3 h-3" />
+        {errors.height}
+      </div>
+    )}
+  </div>
+</div>
+
+<div>
+  <label className="block text-sm font-medium text-purple-700 mb-1">
+    Weight (kg)
+  </label>
+  <div className="relative">
+    <input
+      type="number"
+      name="weight"
+      value={formData.weight}
+      onChange={handleInputChange}
+      onBlur={handleBlur}
+      className={`w-full px-4 py-2 rounded-lg border ${
+        errors.weight && touched.weight
+          ? 'border-red-500 focus:ring-red-500'
+          : 'border-purple-200 focus:ring-purple-500'
+      } focus:border-transparent focus:ring-2`}
+      required
+    />
+    {errors.weight && touched.weight && (
+      <div className="absolute -bottom-6 left-0 text-red-500 text-xs flex items-center gap-1">
+        <AlertCircle className="w-3 h-3" />
+        {errors.weight}
+      </div>
+    )}
+  </div>
+</div>
               </div>
             </div>
 
@@ -562,6 +626,18 @@ const PatientRegistrationForm = () => {
                   : 'Complete All Fields'
               }
             </button>
+            {submitStatus.message && (
+            <div
+              role="alert"
+              className={`mb-4 p-4 rounded-lg ${
+                submitStatus.type === 'success' 
+                  ? 'bg-green-100 text-green-700' 
+                  : 'bg-red-100 text-red-700'
+              }`}
+            >
+              {submitStatus.message}
+            </div>
+          )}
 
             {/* Form Status Message */}
             {Object.keys(errors).length > 0 && touched.fullName && progress!==100 && (

@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState,useContext } from 'react';
 import { UserCircle, Heart, FileText, ChevronLeft, ChevronRight, Pen } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import { RoleContext } from './private';
 
 const Sidebar = (props) => {
   const {id}=props
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [userRole] = useState(() => localStorage.getItem('userRole'));
+  const userRole=useContext(RoleContext)
   const location = useLocation();
   
   const menuItems = [

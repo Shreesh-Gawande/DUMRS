@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Search, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import LogoutComponent from '../components/logout';
+import { RoleContext } from '../components/private';
 const HospitalDashboard = () => {
     const navigate=useNavigate()
   const [patientId, setPatientId] = useState('');
+  const role=useContext(RoleContext)
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -12,17 +15,18 @@ const HospitalDashboard = () => {
     }
   };
 
+  useEffect(()=>{
+    if(role!=='doctor'){
+      navigate('/')
+    }
+  })
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex justify-end mb-8">
-          <button 
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
-          >
-            <LogOut size={20} />
-            Logout
-          </button>
+          <LogoutComponent/>
         </div>
 
         {/* Main Content */}

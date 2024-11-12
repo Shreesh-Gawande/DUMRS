@@ -1,27 +1,23 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Link,useNavigate } from 'react-router-dom';
 import { Building2, UserPlus, LogOut } from 'lucide-react';
+import LogoutComponent from '../components/logout';
+import { RoleContext } from '../components/private';
 
 const AdminDashboard = () => {
     const navigate=useNavigate()
-  const handleLogout = () => {
-    localStorage.clear('token')
-    localStorage.clear('userRole')
-    navigate('/')
-    console.log('Logging out...');
-  };
+    const role=useContext(RoleContext)
+    useEffect(()=>{
+      if(role!=='authority'){
+        navigate('/')
+      }
+    },[])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 via-purple-50 to-blue-50">
       {/* Header with Logout */}
       <div className="fixed top-0 right-0 p-6">
-        <button 
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 text-gray-600 bg-white rounded-lg shadow-md hover:bg-red-50 hover:text-red-600 transition-all duration-300"
-        >
-          <LogOut className="h-4 w-4" onClick={handleLogout}/>
-          Logout
-        </button>
+        <LogoutComponent/>
       </div>
 
       {/* Main Content - Perfectly Centered */}

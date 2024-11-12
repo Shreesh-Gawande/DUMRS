@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect,useContext } from 'react';
 import { 
   Droplets, 
   AlertCircle, 
@@ -14,14 +14,15 @@ import {
 } from 'lucide-react';
 import Sidebar from '../components/sidebar';
 import { useParams } from 'react-router-dom';
+import { RoleContext } from '../components/private';
 const userRole=localStorage.getItem('userRole')
 const MedicalProfile = () => {
   const { patient_id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const userRole = localStorage.getItem('userRole');
-
+  const userRole = useContext(RoleContext)
+  
   useEffect(() => {
     const fetchPatientData = async () => {
       try {
@@ -49,53 +50,36 @@ const MedicalProfile = () => {
 
   const handleAddEntry = async (section, newEntry) => {
     try {
-      const response = await fetch(`/api/patient/${patient_id}/${section}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newEntry),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      setData(prev => ({
-        ...prev,
-        [section]: [...prev[section], newEntry]
-      }));
-    } catch (error) {
-      console.error('Error adding entry:', error);
-      // You might want to show an error message to the user here
-    }
-  };
-
-  const updateInsurance = async (newDetails) => {
-    try {
-      const response = await fetch(`/api/patient/${patient_id}/insurance`, {
+      const response = await fetch(`http://localhost:4000/users/patient/${patient_id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(newDetails),
+        body: JSON.stringify({
+          section,
+          newEntry
+        }),
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+  
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to add entry');
       }
-
+  
       setData(prev => ({
         ...prev,
-        healthInsuranceDetails: newDetails
+        [section]: [...prev[section], result.data.newEntry]
       }));
+     
+  
     } catch (error) {
-      console.error('Error updating insurance:', error);
-      // You might want to show an error message to the user here
+      console.error('Error adding entry:', error);
+    
     }
   };
 
+  
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50">
@@ -375,7 +359,7 @@ const MedicalProfile = () => {
                     { name: 'policyNumber', label: 'Policy Number', type: 'text' },
                     { name: 'coPayAmount', label: 'Co-Pay Amount', type: 'number' }
                   ]}
-                  onSubmit={updateInsurance}
+                  onSubmit={(values)=>{handleAddEntry('healthInsuranceDetails',values)}}
                 />
               }
             >

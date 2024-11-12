@@ -1,23 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Activity, Droplets, Scale, Ruler, AlertCircle } from 'lucide-react';
 import { Graph } from '../components/graph';
 import Sidebar from '../components/sidebar';
 import { useParams,useNavigate } from 'react-router-dom';
+import LogoutComponent from '../components/logout';
+import { RoleContext } from '../components/private';
 
 export const DashboardPage = () => {
   const { patient_id } = useParams();
   const [patientData, setPatientData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [recentRecords, setRecentRecords] = useState([]);
   const navigate=useNavigate()
-  const handleLogout=()=>{
-    localStorage.clear('token')
-    localStorage.clear('userRole')
-    navigate('/')
-    console.log('Logging out...');
-  }
+  const role=useContext(RoleContext)
+
+  function formatToDDMMYYYY(isoDate) {
+    const date = new Date(isoDate);
+    
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+
+    return `${day}-${month}-${year}`;
+}
 
   useEffect(() => {
+
+    if(role==='authority'){
+      navigate('/')
+    }
+
     const fetchPatientData = async () => {
       try {
         setLoading(true);
@@ -34,9 +47,22 @@ export const DashboardPage = () => {
         setLoading(false);
       }
     };
+    const fetchRecentRecords = async () => {
+      try {
+        const response = await fetch(`http://localhost:4000/patient/records/recent/${patient_id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch recent records');
+        }
+        const records = await response.json();
+        setRecentRecords(records);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
 
     if (patient_id) {
       fetchPatientData();
+      fetchRecentRecords()
     }
   }, [patient_id]);
 
@@ -72,7 +98,7 @@ export const DashboardPage = () => {
   return (
     <div className='flex'>
       <Sidebar id={patient_id}/>
-      <div className="p-4 md:p-6 flex flex-col gap-4 md:gap-6 bg-gradient-to-br from-indigo-50 to-purple-50 min-h-screen">
+      <div className="w-[100%] p-4 md:p-6 flex flex-col gap-4 md:gap-6 bg-gradient-to-br from-indigo-50 to-purple-50 min-h-screen">
         {/* Header Section */}
         <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-lg border border-indigo-100">
           <div>
@@ -81,9 +107,7 @@ export const DashboardPage = () => {
             </h1>
             <p className="text-sm text-gray-500">Patient ID: {patient_id}</p>
           </div>
-          <button onClick={handleLogout} className="w-full sm:w-auto px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg">
-            Log Out
-          </button>
+          <LogoutComponent/>
         </div>
 
         {/* Main Dashboard Content */}
@@ -150,41 +174,33 @@ export const DashboardPage = () => {
                   <option>Last 90 days</option>
                 </select>
               </div>
-              <Graph />
+              <Graph id={patient_id}/>
             </div>
           </main>
 
           {/* Recent Records Section - Static */}
           <aside className="w-full lg:w-[26%] bg-white p-4 md:p-5 rounded-xl shadow-lg border border-indigo-100 h-fit">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                Recent Records
-              </h2>
-              <button className="text-indigo-600 text-sm hover:text-purple-600 transition-colors duration-200">
-                View All
-              </button>
-            </div>
-            <div className="flex flex-col gap-4">
-              <RecordItem 
-                title="Annual Checkup"
-                date="2024-09-15"
-                type="checkup"
-                description="Routine annual checkup, all vitals were normal and no immediate health concerns were noted."
-              />
-              <RecordItem 
-                title="Blood Test Results"
-                date="2024-09-25"
-                type="lab"
-                description="Blood test for cholesterol levels showed slightly elevated LDL."
-              />
-              <RecordItem 
-                title="Appendectomy"
-                date="2024-08-10"
-                type="surgery"
-                description="Appendectomy performed due to acute appendicitis."
-              />
-            </div>
-          </aside>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            Recent Records
+          </h2>
+          <button className="text-indigo-600 text-sm hover:text-purple-600 transition-colors duration-200"
+             onClick={()=>{navigate(`/records/${patient_id}`)}}>
+            View All
+          </button>
+        </div>
+        <div className="flex flex-col gap-4">
+          {recentRecords.map((record, index) => (
+            <RecordItem
+              key={index}
+              title={record.visitType}
+              date={formatToDDMMYYYY(record.visitDate)}
+              type={record.visitType.toLowerCase()}
+              description={record.chiefComplaint}
+            />
+          ))}
+        </div>
+      </aside>
         </div>
       </div>
     </div>
@@ -225,8 +241,8 @@ const AllergyCard = ({ substance, reaction }) => (
 const RecordItem = ({ title, date, type, description }) => {
   const getTypeStyles = (type) => {
     const styles = {
-      checkup: 'bg-green-50 text-green-600 border-green-100',
-      lab: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+      Inpatient: 'bg-green-50 text-green-600 border-green-100',
+      Outpatient: 'bg-indigo-50 text-indigo-600 border-indigo-100',
       surgery: 'bg-red-50 text-red-600 border-red-100',
       consultation: 'bg-purple-50 text-purple-600 border-purple-100'
     };

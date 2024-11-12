@@ -1,7 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { PlusCircle, AlertCircle, FileUp, ChevronDown, ChevronUp, Syringe, Stethoscope, Building2, X, Check } from 'lucide-react';
+import React, { useState, useEffect, useContext } from 'react';
+import { PlusCircle, AlertCircle, FileUp, ChevronDown, ChevronUp, Syringe, Stethoscope, Building2, X, Check, Loader2 } from 'lucide-react';
 import Sidebar from '../components/sidebar';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { RoleContext } from '../components/private';
+
+const AlertMessage = ({ type, message }) => {
+  const colors = {
+    success: 'bg-green-50 border-green-200 text-green-700',
+    error: 'bg-red-50 border-red-200 text-red-700',
+    warning: 'bg-yellow-50 border-yellow-200 text-yellow-700'
+  };
+
+  return (
+    <div className={`p-4 rounded-lg border ${colors[type]} flex items-center gap-3`}>
+      {type === 'success' && <Check className="text-green-500" size={20} />}
+      {type === 'error' && <AlertCircle className="text-red-500" size={20} />}
+      {type === 'warning' && <AlertCircle className="text-yellow-500" size={20} />}
+      <p>{message}</p>
+    </div>
+  );
+};
 
 const Section = ({ title, icon, id, isActive, onToggle, children }) => (
   <div className="bg-white rounded-xl p-6 shadow-sm space-y-4">
@@ -19,20 +37,65 @@ const Section = ({ title, icon, id, isActive, onToggle, children }) => (
   </div>
 );
 
+const LoadingOverlay = ({ isVisible, message }) => {
+  if (!isVisible) return null;
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg flex items-center gap-3">
+        <Loader2 className="animate-spin text-purple-600" />
+        <span className="text-gray-700">{message}</span>
+      </div>
+    </div>
+  );
+};
+
+const FileUploadStatus = ({ isUploading, fieldName, error }) => {
+  if (!isUploading && !error) return null;
+  
+  return (
+    <div className="mt-2">
+      {isUploading && (
+        <div className="flex items-center gap-2 text-sm text-purple-600">
+          <Loader2 className="animate-spin" size={16} />
+          <span>Uploading {fieldName}...</span>
+        </div>
+      )}
+      {error && (
+        <div className="text-sm text-red-600">
+          {error}
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+
 const AddMedicalRecord = () => {
   const [activeSection, setActiveSection] = useState('basic');
   const [includeHospitalStay, setIncludeHospitalStay] = useState(false);
   const [includeSurgery, setIncludeSurgery] = useState(false);
   const [formProgress, setFormProgress] = useState(0);
   const [validationErrors, setValidationErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isUploading, setIsUploading] = useState({
+    bloodTests: false,
+    urineTests: false,
+    otherTests: false
+  });
   
   const {patientId} = useParams();
+  const navigate=useNavigate()
+  const role=useContext(RoleContext)
+
 
   const [formData, setFormData] = useState({
     visitType: '',
     visitDate: '',
     chiefComplaint: '',
-    
     vitalSigns: {
       bloodPressure: '',
       heartRate: '',
@@ -56,11 +119,9 @@ const AddMedicalRecord = () => {
     }
   });
 
-  // Common handle input change function
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-    // Handle nested objects
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFormData(prev => ({
@@ -78,7 +139,47 @@ const AddMedicalRecord = () => {
     }
   };
 
-  // Rest of the validation logic remains the same
+  const handleFileUpload = async (fieldName, files) => {
+    const maxSize = 5 * 1024 * 1024;
+    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+    
+    setIsUploading(prev => ({ ...prev, [fieldName]: true }));
+    
+    try {
+      const fileList = Array.from(files).map(file => {
+        if (file.size > maxSize) {
+          throw new Error(`File ${file.name} exceeds 5MB limit`);
+        }
+        
+        if (!allowedTypes.includes(file.type)) {
+          throw new Error(`File ${file.name} must be JPEG, PNG, or PDF`);
+        }
+        
+        return {
+          file: file,
+          name: file.name,
+          url: URL.createObjectURL(file),
+          type: file.type,
+          size: file.size,
+        };
+      });
+      
+      setFormData(prev => ({
+        ...prev,
+        labResults: {
+          ...prev.labResults,
+          [fieldName]: [...prev.labResults[fieldName], ...fileList]
+        }
+      }));
+      
+      setValidationErrors(prev => ({ ...prev, [fieldName]: null }));
+    } catch (error) {
+      setValidationErrors(prev => ({ ...prev, [fieldName]: error.message }));
+    } finally {
+      setIsUploading(prev => ({ ...prev, [fieldName]: false }));
+    }
+  };
+
   const validateForm = () => {
     const errors = {};
     
@@ -89,7 +190,6 @@ const AddMedicalRecord = () => {
     if (!formData.vitalSigns.bloodPressure) errors.bloodPressure = 'Blood pressure is required';
     if (!formData.vitalSigns.heartRate) errors.heartRate = 'Heart rate is required';
     if (!formData.vitalSigns.temperature) errors.temperature = 'Temperature is required';
-    
     
     if (includeHospitalStay) {
       if (!formData.dischargeSummary.admissionDate) errors.admissionDate = 'Admission date is required';
@@ -104,147 +204,132 @@ const AddMedicalRecord = () => {
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
+
   const formatFormDataForSubmission = () => {
     const formDataToSubmit = new FormData();
     
-    // Add basic fields
     formDataToSubmit.append('patientId', patientId);
     formDataToSubmit.append('visitType', formData.visitType);
     formDataToSubmit.append('visitDate', formData.visitDate);
     formDataToSubmit.append('chiefComplaint', formData.chiefComplaint);
     
-    // Add vital signs as a JSON string
-    formDataToSubmit.append('vitalSigns', JSON.stringify({
-      bloodPressure: formData.vitalSigns.bloodPressure,
-      heartRate: formData.vitalSigns.heartRate,
-      temperature: formData.vitalSigns.temperature,
-    }));
+    formDataToSubmit.append('vitalSigns', JSON.stringify(formData.vitalSigns));
 
-    // Add hospital stay information if included
     if (includeHospitalStay) {
-      formDataToSubmit.append('dischargeSummary', JSON.stringify({
-        admissionDate: formData.dischargeSummary.admissionDate,
-        dischargeDate: formData.dischargeSummary.dischargeDate,
-        inpatientSummary: formData.dischargeSummary.inpatientSummary,
-      }));
+      formDataToSubmit.append('dischargeSummary', JSON.stringify(formData.dischargeSummary));
     }
 
-    // Add surgery information if included
     if (includeSurgery) {
-      formDataToSubmit.append('procedures', JSON.stringify({
-        surgeryType: formData.procedures.surgeryType,
-        surgeryDate: formData.procedures.surgeryDate,
-        procedureSummary: formData.procedures.procedureSummary,
-        postOpInstructions: formData.procedures.postOpInstructions,
-      }));
+      formDataToSubmit.append('procedures', JSON.stringify(formData.procedures));
     }
     
-    // Properly append files with their actual File objects
-    formData.labResults.bloodTests.forEach((fileData, index) => {
-      formDataToSubmit.append(`bloodTests`, fileData.file);
+    formData.labResults.bloodTests.forEach((fileData) => {
+      formDataToSubmit.append('bloodTests', fileData.file);
     });
     
-    formData.labResults.urineTests.forEach((fileData, index) => {
-      formDataToSubmit.append(`urineTests`, fileData.file);
+    formData.labResults.urineTests.forEach((fileData) => {
+      formDataToSubmit.append('urineTests', fileData.file);
     });
     
-    formData.labResults.otherTests.forEach((fileData, index) => {
-      formDataToSubmit.append(`otherTests`, fileData.file);
+    formData.labResults.otherTests.forEach((fileData) => {
+      formDataToSubmit.append('otherTests', fileData.file);
     });
 
     return formDataToSubmit;
   };
-  
 
   const handleFormSubmission = async (e) => {
     e.preventDefault();
-    console.log(formData);
+    setSubmitError(null);
+    setSubmitSuccess(false);
     
     if (!validateForm()) {
+      setSubmitError("Please fix the validation errors before submitting.");
       return;
     }
     
+    setIsSubmitting(true);
+    
     try {
       const formData = formatFormDataForSubmission();
+      console.log("request sending:",formData);
       
       const response = await fetch(`http://localhost:4000/patient/${patientId}/add-record`, {
         method: 'POST',
-        body: formData, // Send FormData directly
+        body: formData,
       });
       
       if (!response.ok) {
-        throw new Error('Failed to save medical record');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save medical record');
       }
       
       const savedRecord = await response.json();
+      setSubmitSuccess(true);
+      navigate(`/records/${patientId}`)
       console.log('Record saved successfully:', savedRecord);
       
     } catch (error) {
       console.error('Error submitting medical record:', error);
+      setSubmitError(error.message || 'An error occurred while saving the record');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // File handling functions remain the same
-  const handleFileUpload = (fieldName, files) => {
-    const maxSize = 5 * 1024 * 1024;
-    const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-    
-    const fileList = Array.from(files).map(file => {
-      if (file.size > maxSize) {
-        setValidationErrors(prev => ({
-          ...prev,
-          [fieldName]: `File ${file.name} exceeds 5MB limit`
-        }));
-        return null;
-      }
-      
-      if (!allowedTypes.includes(file.type)) {
-        setValidationErrors(prev => ({
-          ...prev,
-          [fieldName]: `File ${file.name} must be JPEG, PNG, or PDF`
-        }));
-        return null;
-      }
+  const removeFile = (fieldName, fileIndex) => {
+    setFormData(prev => {
+      const fileToRemove = prev.labResults[fieldName][fileIndex];
+      if (fileToRemove?.url) URL.revokeObjectURL(fileToRemove.url);
       
       return {
-        file: file, // Store the actual File object
-        name: file.name,
-        url: URL.createObjectURL(file),
-        type: file.type,
-        size: file.size,
+        ...prev,
+        labResults: {
+          ...prev.labResults,
+          [fieldName]: prev.labResults[fieldName].filter((_, index) => index !== fileIndex)
+        }
       };
-    }).filter(file => file !== null);
-    
-    setFormData(prev => {
-      if (fieldName === 'bloodTests' || fieldName === 'urineTests' || fieldName === 'otherTests') {
-        return {
-          ...prev,
-          labResults: {
-            ...prev.labResults,
-            [fieldName]: [...prev.labResults[fieldName], ...fileList]
-          }
-        };
-      }
-      return prev;
     });
   };
 
+
+  const FilePreview = ({ files, fieldName }) => (
+    <div className="mt-4 space-y-2">
+      {files.map((file, index) => (
+        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+          <div className="flex items-center gap-2">
+            <FileUp size={20} className="text-gray-500" />
+            <span className="text-sm text-gray-700">{file.name}</span>
+            <span className="text-xs text-gray-500">
+              ({(file.size / 1024 / 1024).toFixed(2)} MB)
+            </span>
+          </div>
+          <button
+            onClick={() => removeFile(fieldName, index)}
+            className="text-red-500 hover:text-red-700"
+          >
+            <X size={20} />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+  
+
   useEffect(() => {
+    if(role!=='doctor'){
+      navigate('/')
+    }
+
     return () => {
-      // Cleanup file URLs when component unmounts
-      formData.labResults.bloodTests.forEach(file => {
-        if (file.url) URL.revokeObjectURL(file.url);
-      });
-      formData.labResults.urineTests.forEach(file => {
-        if (file.url) URL.revokeObjectURL(file.url);
-      });
-      formData.labResults.otherTests.forEach(file => {
-        if (file.url) URL.revokeObjectURL(file.url);
+      Object.values(formData.labResults).forEach(files => {
+        files.forEach(file => {
+          if (file.url) URL.revokeObjectURL(file.url);
+        });
       });
     };
   }, []);
 
-  // Progress calculation remains the same
   useEffect(() => {
     const calculateProgress = () => {
       const requiredFields = [
@@ -273,70 +358,33 @@ const AddMedicalRecord = () => {
     };
     
     calculateProgress();
-  }, [
-    formData.visitType,
-    formData.visitDate,
-    formData.chiefComplaint,
-    formData.vitalSigns.bloodPressure,
-    formData.vitalSigns.heartRate,
-    formData.dischargeSummary.admissionDate,
-    formData.dischargeSummary.dischargeDate,
-    formData.procedures.surgeryType,
-    formData.procedures.surgeryDate,
-    includeHospitalStay,
-    includeSurgery
-  ]);
-
-  
-  
-  const removeFile = (fieldName, fileIndex) => {
-    setFormData(prev => {
-      if (fieldName === 'bloodTests' || fieldName === 'urineTests' || fieldName === 'otherTests') {
-        // Revoke URL before removing the file
-        const fileToRemove = prev.labResults[fieldName][fileIndex];
-        if (fileToRemove?.url) URL.revokeObjectURL(fileToRemove.url);
-        
-        return {
-          ...prev,
-          labResults: {
-            ...prev.labResults,
-            [fieldName]: prev.labResults[fieldName].filter((_, index) => index !== fileIndex)
-          }
-        };
-      }
-      return prev;
-    });
-  };
-
-  // Component definitions remain the same
+  }, [formData, includeHospitalStay, includeSurgery]);
   
 
-  const FilePreview = ({ files, fieldName }) => (
-    <div className="mt-4 space-y-2">
-      {files.map((file, index) => (
-        <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <FileUp size={20} className="text-gray-500" />
-            <span className="text-sm text-gray-700">{file.name}</span>
-            <span className="text-xs text-gray-500">
-              ({(file.size / 1024 / 1024).toFixed(2)} MB)
-            </span>
-          </div>
-          <button
-            onClick={() => removeFile(fieldName, index)}
-            className="text-red-500 hover:text-red-700"
-          >
-            <X size={20} />
-          </button>
-        </div>
-      ))}
-    </div>
-  );
+  
 
   return (
     <div className='flex'>
-      <Sidebar/>
+      <Sidebar id={patientId}/>
       <div className="w-[100%] p-6 space-y-6">
+      <LoadingOverlay 
+          isVisible={isSubmitting} 
+          message="Saving medical record..." 
+        />
+        
+        {submitSuccess && (
+          <AlertMessage
+            type="success"
+            message="Medical record saved successfully!"
+          />
+        )}
+        
+        {submitError && (
+          <AlertMessage
+            type="error"
+            message={submitError}
+          />
+        )}
         {/* Progress Bar */}
         <div className="bg-white rounded-xl p-6 shadow-sm">
           <div className="flex justify-between items-center mb-2">
@@ -724,12 +772,38 @@ const AddMedicalRecord = () => {
           </button>
           <button
             type="submit"
-            className="px-4 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700"
+            className="px-4 py-2 text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             onClick={handleFormSubmission}
+            disabled={isSubmitting}
           >
-            Save Record
+            {isSubmitting ? (
+              <>
+                <Loader2 className="animate-spin" size={16} />
+                Saving...
+              </>
+            ) : (
+              'Save Record'
+            )}
           </button>
         </div>
+        <LoadingOverlay 
+          isVisible={isSubmitting} 
+          message="Saving medical record..." 
+        />
+        
+        {submitSuccess && (
+          <AlertMessage
+            type="success"
+            message="Medical record saved successfully!"
+          />
+        )}
+        
+        {submitError && (
+          <AlertMessage
+            type="error"
+            message={submitError}
+          />
+        )}
       </div>
     </div>
   );
