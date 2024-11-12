@@ -17,9 +17,9 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import Sidebar from '../components/sidebar'
 import { RoleContext } from '../components/private';
+const baseUrl = process.env.REACT_APP_API;
 
 
-const baseUrl = process.env.api;
 
 const PatientRecords = () => {
   const { id } = useParams();
