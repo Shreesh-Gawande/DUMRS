@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AlertCircle, CheckCircle2, Circle } from 'lucide-react';
 import { RoleContext } from '../components/private';
 import { useNavigate } from 'react-router-dom';
+const baseUrl = process.env.REACT_APP_API;
 
 const HospitalRegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -133,7 +134,7 @@ const HospitalRegistrationForm = () => {
       setSubmitStatus({ type: '', message: '' });
 
       try {
-        const response = await fetch(process.env.api+'/users/hospital/new', {
+        const response = await fetch(baseUrl+'/users/hospital/new', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

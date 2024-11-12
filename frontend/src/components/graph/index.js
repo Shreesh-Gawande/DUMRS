@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-// Graph.js
-=======
->>>>>>> e7a6e5a650ed0026c118691e21166c35b51de346
 import React, { useState, useEffect } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
@@ -15,6 +11,7 @@ import {
   Filler,
   Legend,
 } from 'chart.js';
+const baseUrl = process.env.REACT_APP_API;
 
 ChartJS.register(
   CategoryScale,
@@ -29,34 +26,12 @@ ChartJS.register(
 
 export function Graph(props) {
   const [bloodPressureData, setBloodPressureData] = useState([]);
-<<<<<<< HEAD
-  const {id}=props
-  useEffect(() => {
-    const fetchBloodPressureData = async () => {
-      try {
-        const response = await fetch(`http://localhost:4000/patient/records/bloodPressure/${id}`);
-        const data = await response.json();
-        setBloodPressureData(data);
-      } catch (error) {
-        console.error('Error fetching blood pressure data:', error);
-      }
-    };
-
-    fetchBloodPressureData();
-  }, []);
-
-  const data = {
-    datasets: [
-      {
-        label: 'Blood Pressure',
-        data: bloodPressureData,
-=======
   const { id } = props;
 
   useEffect(() => {
     const fetchBloodPressureData = async () => {
       try {
-        const response = await fetch(`${process.env.api}/patient/records/bloodPressure/${id}`,{
+        const response = await fetch(baseUrl+`patient/records/bloodPressure/${id}`,{
           method:'GET',
           credentials:'include'
         });
@@ -87,7 +62,6 @@ export function Graph(props) {
       {
         label: 'Blood Pressure',
         data: bloodPressureData.map(d => d.y),
->>>>>>> e7a6e5a650ed0026c118691e21166c35b51de346
         borderColor: 'rgba(138, 43, 226, 1)',
         backgroundColor: 'rgba(138, 43, 226, 0.1)',
         fill: true,
@@ -119,11 +93,7 @@ export function Graph(props) {
         padding: 10,
         displayColors: false,
         callbacks: {
-<<<<<<< HEAD
-          title: (context) => `Year: ${context[0].label}`,
-=======
           title: (context) => `Date: ${context[0].label}`,
->>>>>>> e7a6e5a650ed0026c118691e21166c35b51de346
           label: (context) => `Blood Pressure: ${context.parsed.y.toFixed(0)} mmHg`,
         },
       },
@@ -167,16 +137,8 @@ export function Graph(props) {
 
   return (
     <div style={{ width: '100%' }}>
-<<<<<<< HEAD
-      <h2>Blood Pressure Over the Years</h2>
-      <Line options={options} data={data} />
-    </div>
-  );
-}
-=======
       <h2>Blood Pressure History</h2>
       <Line options={options} data={data} />
     </div>
   );
 }
->>>>>>> e7a6e5a650ed0026c118691e21166c35b51de346

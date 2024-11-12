@@ -5,7 +5,7 @@ import Sidebar from '../components/sidebar';
 import { useParams,useNavigate } from 'react-router-dom';
 import LogoutComponent from '../components/logout';
 import { RoleContext } from '../components/private';
-
+const baseUrl = process.env.REACT_APP_API;
 export const DashboardPage = () => {
   const { patient_id } = useParams();
   const [patientData, setPatientData] = useState(null);
@@ -35,7 +35,7 @@ export const DashboardPage = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`${process.env.api}/users/patient/staticData/${patient_id}`,{
+        const response = await fetch(baseUrl+`/users/patient/staticData/${patient_id}`,{
           method:'GET',
           credentials:'include'
         });
@@ -52,7 +52,7 @@ export const DashboardPage = () => {
     };
     const fetchRecentRecords = async () => {
       try {
-        const response = await fetch(`${process.env.api}/patient/records/recent/${patient_id}`,{
+        const response = await fetch(baseUrl+`/patient/records/recent/${patient_id}`,{
           method:'GET',
           credentials:'include'
         });

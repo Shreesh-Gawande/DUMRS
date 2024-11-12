@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { BadgeCheck, Camera, Edit2, AlertCircle } from 'lucide-react';
 import Sidebar from '../components/sidebar';
 import { RoleContext } from '../components/private';
+const baseUrl = process.env.REACT_APP_API;
 
 const Profile = () => {
   const [profileData, setProfileData] = useState(null);
@@ -26,7 +27,7 @@ const Profile = () => {
     }
     const fetchProfileData = async () => {
       try {
-        const response = await fetch(`${process.env.api}/patient/${id}/personalData`,{
+        const response = await fetch(baseUrl+`/patient/${id}/personalData`,{
           method:'GET',
           credentials:'include'
         });

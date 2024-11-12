@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { AlertCircle, CheckCircle2, Circle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { RoleContext } from '../components/private';
-
+const baseUrl = process.env.REACT_APP_API;
 
 const PatientRegistrationForm = () => {
     const navigate=useNavigate()
@@ -160,7 +160,7 @@ const PatientRegistrationForm = () => {
         setSubmitStatus({ type: '', message: '' });
         
         try {
-          const response = await fetch(process.env.api+'/users/patient/new', {
+          const response = await fetch(baseUrl+'/users/patient/new', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 import { useState,useEffect } from "react";
 import { createContext } from "react";
 export const RoleContext=createContext();
+const baseUrl = process.env.REACT_APP_API;
 
 export const PrivateRoute = ({  children }) => {
     const [isAuthenticated,setauthen]=useState(false)
@@ -9,7 +10,7 @@ export const PrivateRoute = ({  children }) => {
     const [role,setrole]=useState('')
     const getData=async()=>{
     try {
-      const res=await fetch(process.env.api+'/auth/user-type',{
+      const res=await fetch(baseUrl+'/auth/user-type',{
         method:'GET',
         headers:{
           'Content-Type':'application/json'

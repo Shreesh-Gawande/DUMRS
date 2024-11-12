@@ -16,6 +16,7 @@ import Sidebar from '../components/sidebar';
 import { useParams } from 'react-router-dom';
 import { RoleContext } from '../components/private';
 const userRole=localStorage.getItem('userRole')
+const baseUrl = process.env.REACT_APP_API;
 const MedicalProfile = () => {
   const { patient_id } = useParams();
   const [data, setData] = useState(null);
@@ -29,7 +30,7 @@ const MedicalProfile = () => {
         setLoading(true);
         setError(null);
         
-        const response = await fetch(`${process.env.api}/users/patient/${patient_id}`,{
+        const response = await fetch(baseUrl+`/users/patient/${patient_id}`,{
           method:'GET',
           credentials:'include'
         });
