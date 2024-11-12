@@ -63,7 +63,7 @@ const loginAuthority =async (req,res)=>{
 
         res.cookie("token", token, {
             httpOnly: true,
-            secure: false,
+            secure: process.env.NODE_ENV === "production",
             sameSite:"none",
             maxAge: 3600000, // 1 hour
         });
@@ -106,7 +106,7 @@ const logout = async (req, res) => {
         // Clear the token cookie
         res.clearCookie('token', {
             httpOnly: true,
-            secure: false  // Keep this consistent with your login settings
+            secure: true  // Keep this consistent with your login settings
         });
 
         return res.status(200).json({ message: "Logout successful" });
@@ -144,6 +144,7 @@ const loginPatient= async(req,res)=>{
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
+            sameSite: "None",
             maxAge: 3600000, // 1 hour
         });
 
