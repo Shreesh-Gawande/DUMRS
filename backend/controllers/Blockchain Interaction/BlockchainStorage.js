@@ -18,9 +18,9 @@ const wallet = new ethers.Wallet(walletPrivateKey, provider);
 const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet);
 
 // Function to store a record hash
-async function storeRecordHash(patientId, medicalData) {
+async function storeRecordHash(patientId, hash) {
     try {
-        const tx = await contract.storeRecordHash(patientId, medicalData);
+        const tx = await contract.storeRecordHash(patientId, hash);
         console.log("Transaction sent:", tx.hash);
 
         // Wait for the transaction to be mined

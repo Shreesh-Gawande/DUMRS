@@ -4,6 +4,9 @@ const Patient_Personal = require("../models/Patient_Personal");
 
 const bcrypt = require("bcrypt");
 const { sendEmailToPatient } = require("./nodeMailer/mailHandler");
+const generatePatientHash = require("./Blockchain Interaction/hashGenerator");
+const { storeRecordHash, getRecordHash } = require("./Blockchain Interaction/BlockchainStorage");
+
 function generateRandomPassword() {
     return crypto.randomBytes(8).toString('hex'); // Generates a 16-character password
   }
@@ -90,6 +93,11 @@ const createNewPatient=async (req,res)=>{
         await patientStaticData.save();
         await sendEmailToPatient(email,patientId,password);
         
+        const hashedData = await generatePatientHash(patientId);
+        console.log('HashedData: ',hashedData);
+        
+        await storeRecordHash(patientId.toString(), hashedData);
+
         res.status(201).json({ message: 'Patient personal information created successfully', patientPersonal });
     } catch (error) {
         console.error('Error during patient personal creation:', error);
@@ -143,6 +151,19 @@ const GetStaticPatientData=async (req,res)=>{
     const { patient_id } = req.params;
   
     try {
+
+      const calcHash = await generatePatientHash(patient_id);
+      console.log("calculated Hash: ",calcHash);
+      
+      const originalHash = await getRecordHash(patient_id.toString());
+      console.log("original hash: ",originalHash);
+      
+
+      if (calcHash!==originalHash){
+        console.log("Hashes do not match. Data tampered");        
+        return res.status(400).json({error: "Data tampering detected. Records are compromised."});
+      }
+
       // Fetch data from Patient_Personal model
       const patientStatic = await Patient_Personal.findOne({ patient_id }).select('age height weight');
       if (!patientStatic) {
@@ -232,11 +253,6 @@ const updataPatientStaticMedicalData=async(req,res)=>{
         const { patient_id } = req.params;
         const { section, newEntry } = req.body;
     
-        
-    
-       
-    
-        
     
         // Add timestamps and ID to the new entry
         const entryWithMetadata = {
@@ -263,7 +279,11 @@ const updataPatientStaticMedicalData=async(req,res)=>{
             message: 'Patient not found'
           });
         }
-    
+        
+        const hashedData = await generatePatientHash(patient_id);
+        console.log('HashedData: ',hashedData);
+        
+        await storeRecordHash(patient_id.toString(), hashedData);
         
         res.status(200).json({
           success: true,
