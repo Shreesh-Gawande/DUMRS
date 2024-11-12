@@ -14,6 +14,7 @@ export const DashboardPage = () => {
   const [recentRecords, setRecentRecords] = useState([]);
   const navigate=useNavigate()
   const role=useContext(RoleContext)
+  const baseUrl = process.env.REACT_APP_API
 
   function formatToDDMMYYYY(isoDate) {
     const date = new Date(isoDate);
@@ -35,7 +36,7 @@ export const DashboardPage = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch(`${process.env.api}/users/patient/staticData/${patient_id}`,{
+        const response = await fetch(`${baseUrl}/users/patient/staticData/${patient_id}`,{
           method:'GET',
           credentials:'include'
         });
@@ -52,7 +53,7 @@ export const DashboardPage = () => {
     };
     const fetchRecentRecords = async () => {
       try {
-        const response = await fetch(`${process.env.api}/patient/records/recent/${patient_id}`,{
+        const response = await fetch(`${baseUrl}/patient/records/recent/${patient_id}`,{
           method:'GET',
           credentials:'include'
         });

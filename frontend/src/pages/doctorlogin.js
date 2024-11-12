@@ -10,6 +10,7 @@ export function DoctorLogin() {
   const [isValid, setValid] = useState(false);
   const [role, setRole] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const baseUrl = process.env.REACT_APP_API;
 
   // Validation logic
   const validateInputs = () => {
@@ -31,7 +32,7 @@ export function DoctorLogin() {
   const handleDoctorLogin = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(process.env.api+'/auth/hospital', {
+      const res = await fetch(`${baseUrl}/auth/hospital`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -61,7 +62,7 @@ export function DoctorLogin() {
   const handlePatientLogin = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(process.env.api+'/auth/patient', {
+      const res = await fetch(`${baseUrl}/auth/patient`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -91,7 +92,7 @@ export function DoctorLogin() {
   const handleAdminLogin = async () => {
     setIsLoading(true);
     try {
-      const res = await fetch(process.env.api+'/auth/authority', {
+      const res = await fetch(`${baseUrl}/auth/authority`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
