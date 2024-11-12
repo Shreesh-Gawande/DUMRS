@@ -27,7 +27,8 @@ const createNewPatient=async (req,res)=>{
             phoneNumber,
             email,
             emergency_phone,
-            address
+            address,
+            bloodType,
         } = req.body;
 
         if (!phoneNumber || phoneNumber === null) {
@@ -80,6 +81,12 @@ const createNewPatient=async (req,res)=>{
 
         // Save the patient personal information to the database
         await patientPersonal.save();
+
+        const patientStaticData= new Patient({
+            patient_id: patientId,
+            bloodType
+        })
+        await patientStaticData.save();
 
         res.status(201).json({ message: 'Patient personal information created successfully', patientPersonal });
     } catch (error) {

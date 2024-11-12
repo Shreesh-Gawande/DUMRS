@@ -125,4 +125,7 @@ const loginPatient= async(req,res)=>{
     }
 }
 
-module.exports = { loginAuthority,loginHospital,loginPatient,signinAuthority };
+module.exports = { loginAuthority,
+    loginHospital,
+    loginPatient,
+    signinAuthority };
