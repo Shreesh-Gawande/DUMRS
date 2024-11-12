@@ -36,6 +36,7 @@ const signinAuthority=async(req,res)=>{
         // Set the token in an HTTP-only cookie
         res.cookie("token", token, {
             httpOnly: true,
+            samesite:"none",
             secure: process.env.NODE_ENV === "production",
             maxAge: 3600000, // 1 hour
         });
@@ -63,6 +64,7 @@ const loginAuthority =async (req,res)=>{
         res.cookie("token", token, {
             httpOnly: true,
             secure: false,
+            samesite:"none",
             maxAge: 3600000, // 1 hour
         });
 
@@ -89,6 +91,7 @@ const loginHospital=async (req,res)=>{
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
+            samesite:"none",
             maxAge: 3600000, // 1 hour
         });
 
