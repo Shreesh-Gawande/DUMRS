@@ -44,7 +44,7 @@ const PatientRecords = () => {
   };
 
   const handleOpenFile = async (key) => {
-    const response = await fetch(`${baseUrl}/patient/${id}/${key}`);
+    const response = await fetch(`${baseUrl}/patient/file/${id}/${key}`);
     if (!response.ok) {
       throw new Error('Failed to fetch records');
     }

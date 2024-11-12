@@ -9,6 +9,10 @@ const authenticationRoutes = require("./routes/authenticationRoutes");
 const authorizedRoutes=require("./routes/authorizedRoutes")
 const patientRoutes=require('./routes/patientRoutes')
 
+//
+  const testRoutes = require('./routes/testRoutes');
+//
+
 const PORT = process.env.PORT || 4000;
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3001" || "http://localhost:3000";
 const app = express();
@@ -39,6 +43,7 @@ mongoose.connect("mongodb+srv://ShreeshGawande:Shreesh10@cluster0.o3pndei.mongod
 app.use("/auth/", authenticationRoutes); // Prefixing all routes with /auth
 app.use("/users/",authorizedRoutes);
 app.use('/patient',patientRoutes)
+app.use('/test',testRoutes);
 
 // Server
 app.listen(PORT, () => {
