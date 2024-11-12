@@ -92,7 +92,9 @@ export function Graph(props) {
         padding: 10,
         displayColors: false,
         callbacks: {
+
           title: (context) => `Date: ${context[0].label}`,
+
           label: (context) => `Blood Pressure: ${context.parsed.y.toFixed(0)} mmHg`,
         },
       },

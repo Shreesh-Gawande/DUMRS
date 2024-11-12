@@ -3,6 +3,16 @@ const jwt = require("jsonwebtoken");
 const Authority = require("../models/Authority_Personal");
 const SECRET_KEY = process.env.SECRET_KEY||"Shreesh";
 
+
+
+const getUser=async(req,res)=>{
+    const { userType } = req.user; // Access userType from req.user set by verifyToken middleware
+    res.json({ userType });
+}
+
+
+
+
 const signinAuthority=async(req,res)=>{
     const { authority_id, authority_password } = req.body;
     try {
@@ -72,7 +82,7 @@ const loginHospital=async (req,res)=>{
         const isPasswordValid = await bcrypt.compare(hospital_password,hospital.hospital_password);
         if (!isPasswordValid) return res.status(400).json({ message: "Invalid password" });
 
-        const token = jwt.sign({ userId: hospital._id, userType: "hospital" }, SECRET_KEY, { expiresIn: "1h" });
+        const token = jwt.sign({ userId: hospital._id, userType: "doctor" }, SECRET_KEY, { expiresIn: "1h" });
 
         res.cookie("token", token, {
             httpOnly: true,
@@ -80,7 +90,7 @@ const loginHospital=async (req,res)=>{
             maxAge: 3600000, // 1 hour
         });
 
-        return res.json({ message: "Login successful", userType: "hospital", userId: hospital._id });
+        return res.json({ message: "Login successful", userType: "doctor", userId: hospital._id });
     } catch (error) {
         return res.status(500).json({ error: error.message });
     }
@@ -128,4 +138,4 @@ const loginPatient= async(req,res)=>{
 module.exports = { loginAuthority,
     loginHospital,
     loginPatient,
-    signinAuthority };
+    signinAuthority,getUser };
