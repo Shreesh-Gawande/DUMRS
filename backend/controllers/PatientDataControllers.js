@@ -1,8 +1,9 @@
 const Patient = require("../models/Patient");
 const crypto = require('crypto');
 const Patient_Personal = require("../models/Patient_Personal");
-const authMiddleware= require("../middlewares/auth");
+
 const bcrypt = require("bcrypt");
+const { sendEmailToPatient } = require("./nodeMailer/mailHandler");
 function generateRandomPassword() {
     return crypto.randomBytes(8).toString('hex'); // Generates a 16-character password
   }
@@ -87,7 +88,8 @@ const createNewPatient=async (req,res)=>{
             bloodType
         })
         await patientStaticData.save();
-
+        await sendEmailToPatient(email,patientId,password);
+        
         res.status(201).json({ message: 'Patient personal information created successfully', patientPersonal });
     } catch (error) {
         console.error('Error during patient personal creation:', error);
