@@ -173,7 +173,7 @@ export function DoctorLogin() {
     <div className="min-h-screen bg-[#F8F9FF] flex items-center justify-center p-4 font-nunito">
       <div className="w-full max-w-5xl flex items-center justify-between gap-8">
         <div className="w-full max-w-sm mx-auto lg:mx-0">
-          <h1 className="text-4xl lg:text-5xl font-semibold text-[#8699DA] mb-8">UMRS</h1>
+          <h1 className="text-4xl lg:text-5xl font-semibold text-[#8699DA] mb-8">MEDI-SYNC</h1>
 
           {/* Initial Role Selection */}
           {!role ? (

@@ -47,13 +47,13 @@ const Sidebar = (props) => {
       top-0
     `}>
       {/* Logo Section */}
-      <div className="h-20 flex items-center justify-center px-4 border-b border-gray-50">
+      <div className="h-20 my-4 flex items-center justify-center px-4 border-b border-gray-50">
         <Link to={`/dashboard/${id}`}>
         <img
-          src="/api/placeholder/120/40"
-          alt="DUMRS-ICON"
+          src="/medisync.png"
+          alt="medisync-icon"
           className={`
-            ${isCollapsed ? 'w-8' : 'w-32'}
+            ${isCollapsed ? 'w-20' : 'w-36'}
             transition-all duration-300
             object-contain
           `}
