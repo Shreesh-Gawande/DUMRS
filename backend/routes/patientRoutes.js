@@ -134,6 +134,8 @@ router.get('/records/recent/:id', async (req, res) => {
 });
 
 
+
+
 // Add or update allergies
 router.patch("/:id/allergies", async (req, res) => {
   try {

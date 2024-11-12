@@ -173,7 +173,7 @@ export const DashboardPage = () => {
                   <option>Last 90 days</option>
                 </select>
               </div>
-              <Graph />
+              <Graph id={patient_id}/>
             </div>
           </main>
 
