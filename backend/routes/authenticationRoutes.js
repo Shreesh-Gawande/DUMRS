@@ -1,5 +1,6 @@
 const express = require("express");
-const {loginAuthority, loginHospital, loginPatient, signinAuthority}=require("../controllers/AuthControllers")
+const {loginAuthority, loginHospital, loginPatient, signinAuthority,getUser}=require("../controllers/AuthControllers")
+const {verifyToken}=require('../middlewares/verifytoken')
 const router = express.Router();
 
 // Authority Signup
@@ -13,6 +14,8 @@ router.post("/hospital", loginHospital);
 
 // Patient Login
 router.post("/patient", loginPatient);
+
+router.get('/user-type',verifyToken,getUser)
 
 
 module.exports = router;
