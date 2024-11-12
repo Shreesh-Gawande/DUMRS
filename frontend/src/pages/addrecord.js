@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { PlusCircle, AlertCircle, FileUp, ChevronDown, ChevronUp, Syringe, Stethoscope, Building2, X, Check, Loader2 } from 'lucide-react';
 import Sidebar from '../components/sidebar';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { RoleContext } from '../components/private';
 
 const AlertMessage = ({ type, message }) => {
   const colors = {
@@ -87,6 +88,9 @@ const AddMedicalRecord = () => {
   });
   
   const {patientId} = useParams();
+  const navigate=useNavigate()
+  const role=useContext(RoleContext)
+
 
   const [formData, setFormData] = useState({
     visitType: '',
@@ -262,6 +266,7 @@ const AddMedicalRecord = () => {
       
       const savedRecord = await response.json();
       setSubmitSuccess(true);
+      navigate(`/records/${patientId}`)
       console.log('Record saved successfully:', savedRecord);
       
     } catch (error) {
@@ -312,6 +317,10 @@ const AddMedicalRecord = () => {
   
 
   useEffect(() => {
+    if(role!=='doctor'){
+      navigate('/')
+    }
+
     return () => {
       Object.values(formData.labResults).forEach(files => {
         files.forEach(file => {

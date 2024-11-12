@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Search, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import LogoutComponent from '../components/logout';
+import { RoleContext } from '../components/private';
 const HospitalDashboard = () => {
     const navigate=useNavigate()
   const [patientId, setPatientId] = useState('');
+  const role=useContext(RoleContext)
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -12,6 +14,12 @@ const HospitalDashboard = () => {
       navigate(`/dashboard/${patientId}`)
     }
   };
+
+  useEffect(()=>{
+    if(role!=='doctor'){
+      navigate('/')
+    }
+  })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-6">

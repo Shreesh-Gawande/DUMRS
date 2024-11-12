@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Activity, Droplets, Scale, Ruler, AlertCircle } from 'lucide-react';
 import { Graph } from '../components/graph';
 import Sidebar from '../components/sidebar';
 import { useParams,useNavigate } from 'react-router-dom';
 import LogoutComponent from '../components/logout';
+import { RoleContext } from '../components/private';
 
 export const DashboardPage = () => {
   const { patient_id } = useParams();
@@ -12,12 +13,7 @@ export const DashboardPage = () => {
   const [error, setError] = useState(null);
   const [recentRecords, setRecentRecords] = useState([]);
   const navigate=useNavigate()
-  const handleLogout=()=>{
-    localStorage.clear('token')
-    localStorage.clear('userRole')
-    navigate('/')
-    console.log('Logging out...');
-  }
+  const role=useContext(RoleContext)
 
   function formatToDDMMYYYY(isoDate) {
     const date = new Date(isoDate);
@@ -30,6 +26,11 @@ export const DashboardPage = () => {
 }
 
   useEffect(() => {
+
+    if(role==='authority'){
+      navigate('/')
+    }
+
     const fetchPatientData = async () => {
       try {
         setLoading(true);
@@ -240,8 +241,8 @@ const AllergyCard = ({ substance, reaction }) => (
 const RecordItem = ({ title, date, type, description }) => {
   const getTypeStyles = (type) => {
     const styles = {
-      checkup: 'bg-green-50 text-green-600 border-green-100',
-      lab: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+      Inpatient: 'bg-green-50 text-green-600 border-green-100',
+      Outpatient: 'bg-indigo-50 text-indigo-600 border-indigo-100',
       surgery: 'bg-red-50 text-red-600 border-red-100',
       consultation: 'bg-purple-50 text-purple-600 border-purple-100'
     };

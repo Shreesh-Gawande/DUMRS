@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCalendar,
@@ -16,6 +16,7 @@ import {
   faChevronDown,
 } from '@fortawesome/free-solid-svg-icons';
 import Sidebar from '../components/sidebar'
+import { RoleContext } from '../components/private';
 
 
 const baseUrl = 'http://localhost:4000';
@@ -26,7 +27,8 @@ const PatientRecords = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedDiagnosticInfo, setExpandedDiagnosticInfo] = useState({});
-
+  const navigate=useNavigate()
+  const role=useContext(RoleContext)
   const fetchRecords = async () => {
     setLoading(true);
     try {
@@ -61,6 +63,10 @@ const PatientRecords = () => {
   };
 
   useEffect(() => {
+    if(role==='authority'){
+      navigate('/')
+    }
+
     if (id) {
       fetchRecords();
     }

@@ -74,7 +74,8 @@ router.get('/:id/records', async (req, res) => {
 });
 
 // Get specific record of a patient
-router.get('/:id/:key', async (req, res) => {
+router.get('/file/:id/:key', async (req, res) => {
+
   const patientId = req.params.id;
   const key = req.params.key;
   const url = await retrieveFileUrl(patientId, key);
@@ -134,6 +135,25 @@ router.get('/records/recent/:id', async (req, res) => {
 });
 
 
+router.get('/records/bloodPressure/:patientId', async (req, res) => {
+  try {
+    const { patientId } = req.params;
+    
+    // Find all records for the given patient ID
+    const records = await Record.find({ patient_id: patientId }).sort({ visitDate: 1 });
+    
+    // Extract the blood pressure values and their corresponding timestamps
+    const bloodPressureData = records.map(record => ({
+      x: record.visitDate, // Send the full date
+      y: parseFloat(record.vitalSigns.bloodPressure),
+    }));
+    
+    res.json(bloodPressureData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching blood pressure data' });
+  }
+});
 
 
 // Add or update allergies

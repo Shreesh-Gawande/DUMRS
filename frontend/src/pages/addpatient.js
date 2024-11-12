@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { AlertCircle, CheckCircle2, Circle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { RoleContext } from '../components/private';
+
 
 const PatientRegistrationForm = () => {
+    const navigate=useNavigate()
+    const role=useContext(RoleContext)
     const [formData, setFormData] = useState({
         fullName: '',
         dateOfBirth: '',
@@ -63,6 +68,9 @@ const PatientRegistrationForm = () => {
 
   // Calculate form progress
   useEffect(() => {
+    if(role!=='authority'){
+      navigate('/')
+    }
     const requiredFields = [
         'fullName',
         'dateOfBirth',
