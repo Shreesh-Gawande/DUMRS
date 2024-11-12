@@ -42,5 +42,5 @@ app.use('/patient',patientRoutes)
 
 // Server
 app.listen(PORT, () => {
-  console.log(`Server listening on port: ${PORT}`);
+  console.log(`Server listening on port: ${PORT}`)
 });
