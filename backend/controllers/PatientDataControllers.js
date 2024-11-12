@@ -26,7 +26,7 @@ const createNewPatient=async (req,res)=>{
             gender,
             phoneNumber,
             email,
-            emergency_phone,
+            emergencyPhone,
             address,
             bloodType,
         } = req.body;
@@ -75,7 +75,7 @@ const createNewPatient=async (req,res)=>{
             gender,
             phoneNumber,
             email,
-            emergency_phone,
+            emergency_phone:emergencyPhone,
             address
         });
 
@@ -228,25 +228,57 @@ const updatePatientPersonalData=async(req,res)=>{
 const updataPatientStaticMedicalData=async(req,res)=>{
     try {
         const { patient_id } = req.params;
-        const updatedData = req.body;
+        const { section, newEntry } = req.body;
     
-        // Check if the patient exists by patient_id
-        const patient = await Patient.findOne({ patient_id });
-        if (!patient) {
-          return res.status(404).json({ message: "Patient not found" });
-        }
+        
     
-        // Update the patient record with the new data
+       
+    
+        
+    
+        // Add timestamps and ID to the new entry
+        const entryWithMetadata = {
+          ...newEntry,
+          
+        };
+    
+        // Find patient and update the specific section
         const updatedPatient = await Patient.findOneAndUpdate(
-          { patient_id },
-          updatedData,
-          { new: true, runValidators: true }
+          {patient_id:patient_id},
+          { 
+            $push: { [section]: entryWithMetadata },
+            $set: { updated_at: new Date() }
+          },
+          { 
+            new: true,
+            runValidators: true
+          }
         );
     
-        res.status(200).json({ message: "Patient record updated", patient: updatedPatient });
+        if (!updatedPatient) {
+          return res.status(404).json({
+            success: false,
+            message: 'Patient not found'
+          });
+        }
+    
+        
+        res.status(200).json({
+          success: true,
+          message: 'Entry added successfully',
+          data: {
+            patient: updatedPatient,
+            newEntry: entryWithMetadata
+          }
+        });
+    
       } catch (error) {
-        console.error("Error updating patient:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+        console.error('Error updating patient record:', error);
+        res.status(500).json({
+          success: false,
+          message: 'Error updating patient record',
+          error: error.message
+        });
       }
 }
 

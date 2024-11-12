@@ -3,6 +3,7 @@ import { PlusCircle, AlertCircle, FileUp, ChevronDown, ChevronUp, Syringe, Steth
 import Sidebar from '../components/sidebar';
 import { useNavigate, useParams } from 'react-router-dom';
 import { RoleContext } from '../components/private';
+const baseUrl = process.env.REACT_APP_API;
 
 const AlertMessage = ({ type, message }) => {
   const colors = {
@@ -254,7 +255,7 @@ const AddMedicalRecord = () => {
       const formData = formatFormDataForSubmission();
       console.log("request sending:",formData);
       
-      const response = await fetch(`${process.env.api}/patient/${patientId}/add-record`, {
+      const response = await fetch(baseUrl+`/patient/${patientId}/add-record`, {
         method: 'POST',
         body: formData,
         credentials:'include'

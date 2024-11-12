@@ -15,21 +15,22 @@ import {
 import Sidebar from '../components/sidebar';
 import { useParams } from 'react-router-dom';
 import { RoleContext } from '../components/private';
-const userRole=localStorage.getItem('userRole')
+
+const baseUrl = process.env.REACT_APP_API;
 const MedicalProfile = () => {
   const { patient_id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const userRole = useContext(RoleContext)
-  
+  console.log(userRole)
   useEffect(() => {
     const fetchPatientData = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        const response = await fetch(`${process.env.api}/users/patient/${patient_id}`,{
+        const response = await fetch(baseUrl+`/users/patient/${patient_id}`,{
           method:'GET',
           credentials:'include'
         });
@@ -53,7 +54,7 @@ const MedicalProfile = () => {
 
   const handleAddEntry = async (section, newEntry) => {
     try {
-      const response = await fetch(`${process.env.api}/users/patient/${patient_id}`, {
+      const response = await fetch(`${baseUrl}/users/patient/${patient_id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -66,6 +67,8 @@ const MedicalProfile = () => {
       });
   
       const result = await response.json();
+      console.log(result);
+      
       
       if (!result.success) {
         throw new Error(result.message || 'Failed to add entry');
@@ -164,8 +167,11 @@ const MedicalProfile = () => {
                     { name: 'reaction', label: 'Reaction', type: 'text' }
                   ]}
                   onSubmit={(values) => handleAddEntry('allergies', values)}
+                  
                 />
+                
               }
+              userRole={userRole}
             >
               <div className="max-h-96 overflow-y-auto pr-2 space-y-4">
                 {data.allergies.map((allergy, index) => (
@@ -195,8 +201,11 @@ const MedicalProfile = () => {
                     { name: 'dateDiagnosed', label: 'Date Diagnosed', type: 'date' }
                   ]}
                   onSubmit={(values) => handleAddEntry('chronicConditions', values)}
+                  
                 />
+                
               }
+              userRole={userRole}
             >
               <div className="max-h-96 overflow-y-auto pr-2 space-y-4">
                 {data.chronicConditions.map((condition, index) => (
@@ -230,8 +239,10 @@ const MedicalProfile = () => {
                     { name: 'condition', label: 'Condition', type: 'text' }
                   ]}
                   onSubmit={(values) => handleAddEntry('familyMedicalHistory', values)}
+                  
                 />
               }
+              userRole={userRole}
             >
               <div className="max-h-96 overflow-y-auto pr-2 space-y-4">
                 {data.familyMedicalHistory.length > 0 ? (
@@ -275,8 +286,10 @@ const MedicalProfile = () => {
                     { name: 'notes', label: 'Notes', type: 'textarea' }
                   ]}
                   onSubmit={(values) => handleAddEntry('surgeries', values)}
+                  
                 />
               }
+              userRole={userRole}
             >
               <div className="max-h-96 overflow-y-auto pr-2 space-y-4">
                 {data.surgeries.map((surgery, index) => (
@@ -326,8 +339,10 @@ const MedicalProfile = () => {
                     { name: 'boosterShot', label: 'Booster Shot', type: 'checkbox' }
                   ]}
                   onSubmit={(values) => handleAddEntry('immunizationRecords', values)}
+                  
                 />
               }
+              userRole={userRole}
             >
               <div className="max-h-96 overflow-y-auto pr-2 space-y-4">
                 {data.immunizationRecords.map((record, index) => (
@@ -367,8 +382,10 @@ const MedicalProfile = () => {
                     { name: 'coPayAmount', label: 'Co-Pay Amount', type: 'number' }
                   ]}
                   onSubmit={(values)=>{handleAddEntry('healthInsuranceDetails',values)}}
+                  
                 />
               }
+              userRole={userRole}
             >
               <div className="p-6 bg-gradient-to-r from-blue-50 to-violet-50 rounded-xl border border-blue-200 hover:shadow-md transition-all">
                 <div className="grid gap-4">
@@ -533,7 +550,8 @@ const Modal = ({ title, fields, onSubmit }) => {
   };
   
   // Section component
-  const Section = ({ title, icon, children, addButton }) => (
+  const Section = ({ title, icon, children, addButton,userRole }) => (
+    
     <div className="bg-white rounded-xl shadow-lg border border-violet-200 p-6 hover:shadow-xl transition-shadow">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
@@ -542,7 +560,7 @@ const Modal = ({ title, fields, onSubmit }) => {
             {title}
           </h2>
         </div>
-        {userRole==='doctor'&&addButton}
+        {userRole==='doctor' && addButton}
       </div>
       {children}
     </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+const baseUrl = process.env.REACT_APP_API;
 const LogoutComponent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -10,7 +10,7 @@ const LogoutComponent = () => {
     setIsLoading(true);
 
     try {
-      const response = await fetch(process.env.api+'/auth/logout', {
+      const response = await fetch(baseUrl+'/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });

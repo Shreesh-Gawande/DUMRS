@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { BadgeCheck, Camera, Edit2, AlertCircle } from 'lucide-react';
 import Sidebar from '../components/sidebar';
 import { RoleContext } from '../components/private';
-
+const baseUrl = process.env.REACT_APP_API;
 const Profile = () => {
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -20,13 +20,17 @@ const Profile = () => {
     return `${day}-${month}-${year}`;
   }
 
+  function formatAddress(address) {
+    return `${address.street}, ${address.city}, ${address.state} - ${address.zipCode}`;
+  }
+
   useEffect(() => {
     if (role === 'authority') {
       navigate('/');
     }
     const fetchProfileData = async () => {
       try {
-        const response = await fetch(`${process.env.api}/patient/${id}/personalData`,{
+        const response = await fetch(baseUrl+`/patient/${id}/personalData`,{
           method:'GET',
           credentials:'include'
         });
@@ -66,6 +70,22 @@ const Profile = () => {
       </div>
     );
   }
+
+  // Prepare address fields for display
+  const addressFields = [
+    { label: 'Street', value: profileData.address?.street, icon: '🏠' },
+    { label: 'City', value: profileData.address?.city, icon: '🌆' },
+    { label: 'State', value: profileData.address?.state, icon: '📍' },
+    { label: 'ZIP Code', value: profileData.address?.zipCode, icon: '📮' }
+  ];
+
+  const personalFields = [
+    { label: 'Date of Birth', value: formatToDDMMYYYY(profileData.dateOfBirth), icon: '🎂' },
+    { label: 'Age', value: profileData.age, icon: '📅' },
+    { label: 'Gender', value: profileData.gender, icon: '👤' },
+    { label: 'Phone Number', value: profileData.phoneNumber, icon: '📱' },
+    { label: 'Email', value: profileData.email, icon: '✉️' }
+  ];
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-purple-50 to-white">
@@ -113,29 +133,46 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Profile Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-              {[
-                { label: 'Date of Birth', value: formatToDDMMYYYY(profileData.dateOfBirth), icon: '🎂' },
-                { label: 'Age', value: profileData.age, icon: '📅' },
-                { label: 'Gender', value: profileData.gender, icon: '👤' },
-                { label: 'Phone Number', value: profileData.phoneNumber, icon: '📱' },
-                { label: 'Email', value: profileData.email, icon: '✉️' },
-                { label: 'Address', value: profileData.address, icon: '🏠' }
-              ].map((field, index) => (
-                <div key={index} className="group relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-indigo-400/20 rounded-xl blur-sm transition-all group-hover:blur-md opacity-50"></div>
-                  <div className="relative space-y-2 p-6 bg-white rounded-xl border border-purple-100 hover:border-purple-200 transition-all duration-200 hover:shadow-lg">
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-500">
-                      <span>{field.icon}</span>
-                      {field.label}
-                    </label>
-                    <div className="text-lg text-gray-700 font-medium">
-                      {field.value}
+            {/* Personal Information */}
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Personal Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {personalFields.map((field, index) => (
+                  <div key={index} className="group relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-indigo-400/20 rounded-xl blur-sm transition-all group-hover:blur-md opacity-50"></div>
+                    <div className="relative space-y-2 p-6 bg-white rounded-xl border border-purple-100 hover:border-purple-200 transition-all duration-200 hover:shadow-lg">
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-500">
+                        <span>{field.icon}</span>
+                        {field.label}
+                      </label>
+                      <div className="text-lg text-gray-700 font-medium">
+                        {field.value}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            {/* Address Information */}
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">Address Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {addressFields.map((field, index) => (
+                  <div key={index} className="group relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-indigo-400/20 rounded-xl blur-sm transition-all group-hover:blur-md opacity-50"></div>
+                    <div className="relative space-y-2 p-6 bg-white rounded-xl border border-purple-100 hover:border-purple-200 transition-all duration-200 hover:shadow-lg">
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-500">
+                        <span>{field.icon}</span>
+                        {field.label}
+                      </label>
+                      <div className="text-lg text-gray-700 font-medium">
+                        {field.value}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

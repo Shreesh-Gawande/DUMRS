@@ -11,6 +11,7 @@ import {
   Filler,
   Legend,
 } from 'chart.js';
+const baseUrl = process.env.REACT_APP_API;
 
 ChartJS.register(
   CategoryScale,
@@ -30,7 +31,7 @@ export function Graph(props) {
   useEffect(() => {
     const fetchBloodPressureData = async () => {
       try {
-        const response = await fetch(`${process.env.api}/patient/records/bloodPressure/${id}`,{
+        const response = await fetch(baseUrl+`patient/records/bloodPressure/${id}`,{
           method:'GET',
           credentials:'include'
         });
