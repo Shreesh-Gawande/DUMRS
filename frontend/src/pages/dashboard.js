@@ -173,13 +173,9 @@ export const DashboardPage = () => {
             <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-indigo-100">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <h2 className="text-lg font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Health Metrics
+                  Blood Pressure History
                 </h2>
-                <select className="w-full sm:w-auto px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-lg text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300">
-                  <option>Last 7 days</option>
-                  <option>Last 30 days</option>
-                  <option>Last 90 days</option>
-                </select>
+                
               </div>
               <Graph id={patient_id}/>
             </div>

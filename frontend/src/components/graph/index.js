@@ -31,7 +31,7 @@ export function Graph(props) {
   useEffect(() => {
     const fetchBloodPressureData = async () => {
       try {
-        const response = await fetch(baseUrl+`patient/records/bloodPressure/${id}`,{
+        const response = await fetch(baseUrl+`/patient/records/bloodPressure/${id}`,{
           method:'GET',
           credentials:'include'
         });
@@ -139,7 +139,7 @@ export function Graph(props) {
 
   return (
     <div style={{ width: '100%' }}>
-      <h2>Blood Pressure History</h2>
+      
       <Line options={options} data={data} />
     </div>
   );

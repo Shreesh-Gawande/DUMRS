@@ -118,7 +118,7 @@ export function DoctorLogin() {
         setError(data.message || 'Login failed. Please check your credentials.');
       }
     } catch (error) {
-      setError('Network error. Please try again later12.');
+      setError('Network error. Please try again later.');
     } finally {
       setIsLoading(false);
     }
